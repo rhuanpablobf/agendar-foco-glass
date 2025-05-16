@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 
 interface Client {
-  id: number;
+  id: number | string;
   name: string;
   phone: string;
   email?: string;
@@ -19,10 +19,22 @@ interface ClientComboboxProps {
   onChange: (value: string) => void;
 }
 
-export function ClientCombobox({ clients, value, onChange }: ClientComboboxProps) {
+export function ClientCombobox({ clients = [], value, onChange }: ClientComboboxProps) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
-  const selectedClient = clients.find(client => client.id.toString() === value);
+  // Ensure clients is always an array, even if it's undefined
+  const clientsArray = Array.isArray(clients) ? clients : [];
+  
+  const selectedClient = clientsArray.find(client => client.id.toString() === value);
+
+  // Filter clients based on search query
+  const filteredClients = searchQuery 
+    ? clientsArray.filter(client => 
+        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.phone.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : clientsArray;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -42,7 +54,12 @@ export function ClientCombobox({ clients, value, onChange }: ClientComboboxProps
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-background/95 backdrop-blur-md border border-white/20">
         <Command className="bg-transparent">
-          <CommandInput placeholder="Buscar cliente..." className="h-9" />
+          <CommandInput 
+            placeholder="Buscar cliente..." 
+            className="h-9"
+            value={searchQuery}
+            onValueChange={setSearchQuery} 
+          />
           <CommandEmpty className="py-6 text-center">
             <div className="space-y-1">
               <p>Cliente não encontrado</p>
@@ -51,32 +68,35 @@ export function ClientCombobox({ clients, value, onChange }: ClientComboboxProps
               </p>
             </div>
           </CommandEmpty>
-          <CommandGroup className="max-h-[200px] overflow-auto">
-            {clients.map((client) => (
-              <CommandItem
-                key={client.id}
-                value={client.name}
-                onSelect={() => {
-                  onChange(client.id.toString());
-                  setOpen(false);
-                }}
-                className="cursor-pointer"
-              >
-                <div className="flex items-start flex-1 gap-x-2">
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">{client.name}</p>
-                    <p className="text-xs text-muted-foreground">{client.phone}</p>
+          {filteredClients.length > 0 && (
+            <CommandGroup className="max-h-[200px] overflow-auto">
+              {filteredClients.map((client) => (
+                <CommandItem
+                  key={client.id}
+                  value={client.name}
+                  onSelect={() => {
+                    onChange(client.id.toString());
+                    setOpen(false);
+                    setSearchQuery("");
+                  }}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-start flex-1 gap-x-2">
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">{client.name}</p>
+                      <p className="text-xs text-muted-foreground">{client.phone}</p>
+                    </div>
                   </div>
-                </div>
-                <Check
-                  className={cn(
-                    "ml-auto h-4 w-4",
-                    client.id.toString() === value ? "opacity-100" : "opacity-0"
-                  )}
-                />
-              </CommandItem>
-            ))}
-          </CommandGroup>
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      client.id.toString() === value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
         </Command>
       </PopoverContent>
     </Popover>
