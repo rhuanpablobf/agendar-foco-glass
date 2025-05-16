@@ -10,6 +10,13 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import CompanyDashboard from "./pages/dashboard/Company";
 import AdminDashboard from "./pages/dashboard/Admin";
+import Schedule from "./pages/dashboard/Schedule";
+import Team from "./pages/dashboard/Team";
+import Services from "./pages/dashboard/Services";
+import Clients from "./pages/dashboard/Clients";
+import Financial from "./pages/dashboard/Financial";
+import Reports from "./pages/dashboard/Reports";
+import Settings from "./pages/dashboard/Settings";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +35,13 @@ const App = () => (
           
           {/* Rotas de empresa */}
           <Route path="/dashboard" element={<CompanyDashboard />} />
+          <Route path="/agenda" element={<Schedule />} />
+          <Route path="/equipe" element={<Team />} />
+          <Route path="/servicos" element={<Services />} />
+          <Route path="/clientes" element={<Clients />} />
+          <Route path="/financeiro" element={<Financial />} />
+          <Route path="/relatorios" element={<Reports />} />
+          <Route path="/configuracoes" element={<Settings />} />
           
           {/* Rotas de admin */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
