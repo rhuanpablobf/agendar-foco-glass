@@ -45,6 +45,9 @@ const App = () => (
           
           {/* Rotas de admin */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/empresas" element={<AdminDashboard />} />
+          <Route path="/admin/planos" element={<AdminDashboard />} />
+          <Route path="/admin/configuracoes" element={<AdminDashboard />} />
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />
