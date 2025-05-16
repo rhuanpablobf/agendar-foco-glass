@@ -23,7 +23,7 @@ const PopoverContent = React.forwardRef<
       )}
       {...props}
     >
-      {children}
+      {children || null}
     </PopoverPrimitive.Content>
   </PopoverPrimitive.Portal>
 ))

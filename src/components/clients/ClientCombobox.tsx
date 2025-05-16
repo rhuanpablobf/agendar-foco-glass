@@ -47,7 +47,7 @@ export function ClientCombobox({
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [filteredClients, setFilteredClients] = useState<ClientOption[]>(clients || []);
+  const [filteredClients, setFilteredClients] = useState<ClientOption[]>([]);
 
   // Get the currently selected client
   const selectedClient = clients?.find(
@@ -56,7 +56,10 @@ export function ClientCombobox({
 
   // Filter clients based on search query
   useEffect(() => {
-    if (!clients?.length) return;
+    if (!Array.isArray(clients)) {
+      setFilteredClients([]);
+      return;
+    }
 
     // Simulate loading state for better UX
     setIsLoading(true);
@@ -80,6 +83,15 @@ export function ClientCombobox({
     return () => clearTimeout(timeoutId);
   }, [searchValue, clients]);
 
+  // Initialize filtered clients with all clients when component mounts
+  useEffect(() => {
+    if (Array.isArray(clients)) {
+      setFilteredClients(clients);
+    } else {
+      setFilteredClients([]);
+    }
+  }, []);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -93,6 +105,10 @@ export function ClientCombobox({
             error ? "border-red-500" : "",
             className
           )}
+          onClick={(e) => {
+            // Prevent the event from propagating upwards
+            e.stopPropagation();
+          }}
         >
           {selectedClient?.name || placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -131,7 +147,7 @@ export function ClientCombobox({
                 )}
               </CommandEmpty>
               
-              {filteredClients?.length > 0 && (
+              {filteredClients && filteredClients.length > 0 && (
                 <CommandGroup className="max-h-[300px] overflow-y-auto">
                   {filteredClients.map((client) => (
                     <CommandItem
@@ -162,7 +178,7 @@ export function ClientCombobox({
             </>
           )}
 
-          {onAddNewClient && filteredClients?.length > 0 && (
+          {onAddNewClient && (
             <div className="p-2 border-t border-white/10">
               <Button
                 variant="outline"
