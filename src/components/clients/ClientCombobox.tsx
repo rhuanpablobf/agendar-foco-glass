@@ -77,7 +77,6 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
               </p>
             </div>
           </CommandEmpty>
-          {/* Ensure CommandGroup always has children */}
           <CommandGroup className="max-h-[200px] overflow-auto">
             {clientsToRender.length > 0 ? (
               clientsToRender.map((client) => (
