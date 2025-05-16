@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import ColorPicker from '@/components/settings/ColorPicker';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { UpgradeButton } from '@/components/subscription/UpgradeButton';
+import { Progress } from '@/components/ui/progress';
 
 const Settings = () => {
   // Subscription data
