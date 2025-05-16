@@ -61,3 +61,45 @@ export interface CommissionSettings {
   defaultPercentage: number;
   serviceSpecificPercentages: Record<string, number>;
 }
+
+// Report related interfaces
+export interface RevenueByProfessional {
+  professionalId: string;
+  professionalName: string;
+  totalRevenue: number;
+  serviceCount: number;
+  transactions: Transaction[];
+}
+
+export interface RevenueByService {
+  serviceId: string;
+  serviceName: string;
+  totalRevenue: number;
+  serviceCount: number;
+  transactions: Transaction[];
+}
+
+export interface MonthlyRevenueData {
+  month: string;
+  revenue: number;
+  expenses: number;
+  profit: number;
+  serviceCount: number;
+  averageTicket: number;
+}
+
+export interface AttendanceSummary {
+  total: number;
+  completed: number;
+  cancelled: number;
+  noShow: number;
+  cancellationRate: number;
+  noShowRate: number;
+}
+
+export interface AttendanceByProfessional {
+  professionalId: string;
+  professionalName: string;
+  summary: AttendanceSummary;
+}
+
