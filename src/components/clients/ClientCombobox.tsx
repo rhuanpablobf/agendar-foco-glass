@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Check, ChevronsUpDown, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
@@ -23,17 +23,23 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Ensure clients is always an array
+  // Ensure clients is always an array and handle empty arrays properly
   const clientsArray = Array.isArray(clients) ? clients : [];
   
-  const selectedClient = clientsArray.find(client => client.id.toString() === value);
+  // Find the selected client safely
+  const selectedClient = clientsArray.find(client => 
+    client?.id && client.id.toString() === value
+  );
 
-  // Filter clients based on search query
+  // Filter clients based on search query with safeguards against undefined values
   const filteredClients = searchQuery 
-    ? clientsArray.filter(client => 
-        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.phone.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? clientsArray.filter(client => {
+        if (!client) return false;
+        const name = client.name?.toLowerCase() || '';
+        const phone = client.phone?.toLowerCase() || '';
+        const query = searchQuery.toLowerCase();
+        return name.includes(query) || phone.includes(query);
+      })
     : clientsArray;
 
   return (
@@ -69,11 +75,11 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
             </div>
           </CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-auto">
-            {filteredClients.length > 0 ? (
+            {filteredClients && filteredClients.length > 0 ? (
               filteredClients.map((client) => (
                 <CommandItem
                   key={client.id}
-                  value={client.name}
+                  value={client.name || ''}
                   onSelect={() => {
                     onChange(client.id.toString());
                     setOpen(false);
