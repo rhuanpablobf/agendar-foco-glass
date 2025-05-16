@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -23,8 +22,6 @@ import {
   PopoverTrigger 
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { ClientCombobox } from '@/components/clients/ClientCombobox';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 // Estilos CSS personalizados para o grid de horários
 import './schedule.css';
@@ -47,11 +44,6 @@ const mockClients = [
   { id: 1, name: "João Silva", phone: "(11) 98765-4321", email: "joao@email.com" },
   { id: 2, name: "Maria Souza", phone: "(11) 91234-5678", email: "maria@email.com" },
   { id: 3, name: "Pedro Santos", phone: "(11) 99876-5432", email: "pedro@email.com" },
-  { id: 4, name: "Ana Oliveira", phone: "(11) 99999-8888", email: "ana@email.com" },
-  { id: 5, name: "Lucas Pereira", phone: "(11) 98888-7777", email: "lucas@email.com" },
-  { id: 6, name: "Juliana Mendes", phone: "(11) 97777-6666", email: "juliana@email.com" },
-  { id: 7, name: "Roberto Almeida", phone: "(11) 96666-5555", email: "roberto@email.com" },
-  { id: 8, name: "Carolina Souza", phone: "(11) 95555-4444", email: "carolina@email.com" },
 ];
 
 const mockAppointments = [
@@ -142,7 +134,6 @@ const Schedule = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
   const [showNewClientModal, setShowNewClientModal] = useState(false);
   const [planLimitReached, setPlanLimitReached] = useState(false); // Mock: controle de limite do plano
-  const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
 
   // Formulário para novo agendamento
   const appointmentForm = useForm<AppointmentFormValues>({
@@ -182,7 +173,6 @@ const Schedule = () => {
     
     toast.success("Agendamento criado com sucesso!");
     appointmentForm.reset();
-    setIsAppointmentDialogOpen(false);
   };
 
   const handleCreateClient = (data: NewClientFormValues) => {
@@ -197,48 +187,35 @@ const Schedule = () => {
   // Renderizar as células de horário para cada profissional
   const renderTimeSlots = (professional: typeof mockProfessionals[0]) => {
     return (
-      <div className="grid grid-cols-24 gap-2">
+      <div className="grid grid-cols-24 gap-1">
         {timeSlots.map((time, index) => {
           const appointment = filteredAppointments.find(
             app => app.professionalId === professional.id && app.startTime === time
           );
 
-          const getAppointmentClass = (status?: string) => {
-            switch (status) {
-              case "confirmado":
-                return "bg-emerald-500/20 border border-emerald-500/30 hover:bg-emerald-500/30";
-              case "pendente":
-                return "bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30";
-              default:
-                return "bg-white/5 border border-white/10 hover:bg-white/10";
-            }
-          };
-
           return (
             <div 
               key={`${professional.id}-${time}`} 
               className={cn(
-                "time-slot transition-all rounded-md shadow-sm",
+                "h-16 rounded-md relative flex items-center justify-center transition-all",
                 appointment 
-                  ? getAppointmentClass(appointment.status)
-                  : "time-slot-free"
+                  ? appointment.status === "confirmado"
+                    ? "bg-green-500/20 border border-green-500/30" 
+                    : "bg-amber-500/20 border border-amber-500/30"
+                  : "bg-white/5 border border-white/10 hover:bg-white/10"
               )}
               style={{
                 gridColumn: `span ${appointment?.serviceId === 2 ? 4 : 1} / span ${appointment?.serviceId === 2 ? 4 : 1}`,
               }}
             >
               {appointment ? (
-                <div className="appointment-card">
-                  <div>
-                    <div className="appointment-client">{appointment.clientName}</div>
-                    <div className="appointment-service">{appointment.serviceName}</div>
-                  </div>
-                  <div className="appointment-time">
-                    {appointment.startTime} - {appointment.endTime}
-                  </div>
+                <div className="p-2 w-full h-full flex flex-col justify-between overflow-hidden">
+                  <div className="font-medium text-sm truncate">{appointment.clientName}</div>
+                  <div className="text-xs text-muted-foreground truncate">{appointment.serviceName}</div>
+                  <div className="text-xs mt-1">{appointment.startTime} - {appointment.endTime}</div>
                 </div>
               ) : (
-                <div className="text-xs text-muted-foreground">{time}</div>
+                <span className="text-xs text-muted-foreground">{time}</span>
               )}
             </div>
           );
@@ -259,94 +236,61 @@ const Schedule = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <Dialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen}>
+            <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-primary to-purple-500" disabled={planLimitReached}>
+                <Button disabled={planLimitReached}>
                   <Plus className="mr-2 h-4 w-4" /> Novo Agendamento
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border border-white/20 bg-white/10 backdrop-blur-md shadow-lg">
-                <div className="p-6 space-y-6">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl">Novo Agendamento</DialogTitle>
-                    <DialogDescription>
-                      Preencha os dados para criar um novo agendamento
-                    </DialogDescription>
-                  </DialogHeader>
+              <DialogContent className="sm:max-w-[500px] border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
+                <DialogHeader>
+                  <DialogTitle>Novo Agendamento</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados para criar um novo agendamento
+                  </DialogDescription>
+                </DialogHeader>
 
-                  <Form {...appointmentForm}>
-                    <form onSubmit={appointmentForm.handleSubmit(handleCreateAppointment)} className="space-y-5">
-                      <div className="grid grid-cols-1 gap-5">
-                        <FormField
-                          control={appointmentForm.control}
-                          name="professional"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Profissional</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger className="w-full bg-white/5 border-white/20">
-                                  <SelectValue placeholder="Selecione um profissional" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-background/95 backdrop-blur-md border border-white/20">
-                                  {mockProfessionals.map(professional => (
-                                    <SelectItem key={professional.id} value={professional.id.toString()}>
-                                      {professional.name} ({professional.specialty})
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
+                <Form {...appointmentForm}>
+                  <form onSubmit={appointmentForm.handleSubmit(handleCreateAppointment)} className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      <FormField
+                        control={appointmentForm.control}
+                        name="professional"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Profissional</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um profissional" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
+                                {mockProfessionals.map(professional => (
+                                  <SelectItem key={professional.id} value={professional.id.toString()}>
+                                    {professional.name} ({professional.specialty})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="flex justify-between items-center gap-2">
                         <FormField
                           control={appointmentForm.control}
                           name="client"
                           render={({ field }) => (
-                            <FormItem>
-                              <div className="flex justify-between items-center">
-                                <FormLabel className="text-sm font-medium">Cliente</FormLabel>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 px-2 text-xs"
-                                  onClick={() => setShowNewClientModal(true)}
-                                >
-                                  <UserPlus className="h-3.5 w-3.5 mr-1" />
-                                  Novo
-                                </Button>
-                              </div>
-                              <ClientCombobox 
-                                clients={mockClients}
-                                value={field.value}
-                                onChange={field.onChange}
-                              />
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={appointmentForm.control}
-                          name="service"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Serviço</FormLabel>
+                            <FormItem className="flex-1">
+                              <FormLabel>Cliente</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger className="w-full bg-white/5 border-white/20">
-                                  <SelectValue placeholder="Selecione um serviço" />
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um cliente" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-background/95 backdrop-blur-md border border-white/20">
-                                  {mockServices.map(service => (
-                                    <SelectItem key={service.id} value={service.id.toString()}>
-                                      <div className="flex justify-between items-center w-full">
-                                        <span>{service.name}</span>
-                                        <span className="text-muted-foreground text-xs">
-                                          {service.duration}min • R${service.price.toFixed(2)}
-                                        </span>
-                                      </div>
+                                <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
+                                  {mockClients.map(client => (
+                                    <SelectItem key={client.id} value={client.id.toString()}>
+                                      {client.name}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -355,191 +299,192 @@ const Schedule = () => {
                             </FormItem>
                           )}
                         />
-
-                        <div className="grid grid-cols-2 gap-5">
-                          <FormField
-                            control={appointmentForm.control}
-                            name="date"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-col">
-                                <FormLabel className="text-sm font-medium">Data</FormLabel>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                          "pl-3 text-left font-normal bg-white/5 border-white/20",
-                                          !field.value && "text-muted-foreground"
-                                        )}
-                                      >
-                                        {field.value ? (
-                                          format(field.value, "PPP", { locale: ptBR })
-                                        ) : (
-                                          <span>Selecione uma data</span>
-                                        )}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0 bg-background/95 backdrop-blur-md border border-white/20" align="start">
-                                    <Calendar
-                                      mode="single"
-                                      selected={field.value}
-                                      onSelect={field.onChange}
-                                      initialFocus
-                                      className="p-3 pointer-events-auto"
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={appointmentForm.control}
-                            name="time"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium">Horário</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <SelectTrigger className="w-full bg-white/5 border-white/20">
-                                    <SelectValue placeholder="Selecione" />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-background/95 backdrop-blur-md border border-white/20 max-h-[200px]">
-                                    {timeSlots.map(time => (
-                                      <SelectItem key={time} value={time}>
-                                        {time}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        <div className="mt-8">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setShowNewClientModal(true)}
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
                         </div>
+                      </div>
+
+                      <FormField
+                        control={appointmentForm.control}
+                        name="service"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Serviço</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um serviço" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
+                                {mockServices.map(service => (
+                                  <SelectItem key={service.id} value={service.id.toString()}>
+                                    {service.name} ({service.duration}min - R$ {service.price.toFixed(2)})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={appointmentForm.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel>Data</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "pl-3 text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP", { locale: ptBR })
+                                      ) : (
+                                        <span>Selecione uma data</span>
+                                      )}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 bg-background/90 backdrop-blur-sm border border-white/20" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
                         <FormField
                           control={appointmentForm.control}
-                          name="notes"
+                          name="time"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium">Observações</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Observações sobre o agendamento" 
-                                  className="bg-white/5 border-white/20" 
-                                  {...field} 
-                                />
-                              </FormControl>
+                              <FormLabel>Horário</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
+                                  {timeSlots.map(time => (
+                                    <SelectItem key={time} value={time}>
+                                      {time}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
 
-                      <DialogFooter>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => setIsAppointmentDialogOpen(false)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button 
-                          type="submit" 
-                          className="bg-gradient-to-r from-primary to-purple-500"
-                        >
-                          Agendar
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
-                </div>
+                      <FormField
+                        control={appointmentForm.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Observações</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Observações sobre o agendamento" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <DialogFooter>
+                      <Button type="submit">Agendar</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
 
-            <Sheet open={showNewClientModal} onOpenChange={setShowNewClientModal}>
-              <SheetContent className="sm:max-w-[450px] border border-white/20 bg-white/10 backdrop-blur-md shadow-lg">
-                <SheetHeader>
-                  <SheetTitle>Novo Cliente</SheetTitle>
-                  <SheetDescription>
+            <Dialog open={showNewClientModal} onOpenChange={setShowNewClientModal}>
+              <DialogContent className="sm:max-w-[500px] border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
+                <DialogHeader>
+                  <DialogTitle>Novo Cliente</DialogTitle>
+                  <DialogDescription>
                     Cadastre um novo cliente para agendar serviços
-                  </SheetDescription>
-                </SheetHeader>
+                  </DialogDescription>
+                </DialogHeader>
 
-                <div className="mt-6">
-                  <Form {...newClientForm}>
-                    <form onSubmit={newClientForm.handleSubmit(handleCreateClient)} className="space-y-5">
-                      <FormField
-                        control={newClientForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm">Nome completo</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Nome do cliente" 
-                                className="bg-white/5 border-white/20" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                <Form {...newClientForm}>
+                  <form onSubmit={newClientForm.handleSubmit(handleCreateClient)} className="space-y-4">
+                    <FormField
+                      control={newClientForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome completo</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome do cliente" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={newClientForm.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm">Telefone</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="(00) 00000-0000" 
-                                className="bg-white/5 border-white/20" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={newClientForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input placeholder="(00) 00000-0000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={newClientForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm">E-mail (opcional)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="email@exemplo.com" 
-                                className="bg-white/5 border-white/20" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={newClientForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail (opcional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="email@exemplo.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <div className="flex justify-end space-x-2 pt-4">
-                        <Button type="button" variant="outline" onClick={() => setShowNewClientModal(false)}>
-                          Cancelar
-                        </Button>
-                        <Button type="submit" className="bg-gradient-to-r from-primary to-purple-500">
-                          Cadastrar
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </div>
-              </SheetContent>
-            </Sheet>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setShowNewClientModal(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit">Cadastrar</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -634,7 +579,7 @@ const Schedule = () => {
                       <span>{format(selectedDate, "PPP", { locale: ptBR })}</span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-background/95 backdrop-blur-md border border-white/20" align="start">
+                  <PopoverContent className="w-auto p-0 bg-background/90 backdrop-blur-sm border border-white/20" align="start">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -649,7 +594,7 @@ const Schedule = () => {
                   <SelectTrigger className="w-[240px]">
                     <SelectValue placeholder="Todos os profissionais" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background/95 backdrop-blur-md border border-white/20">
+                  <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
                     <SelectItem value={undefined}>Todos os profissionais</SelectItem>
                     {mockProfessionals.map(professional => (
                       <SelectItem key={professional.id} value={professional.id.toString()}>
@@ -663,7 +608,7 @@ const Schedule = () => {
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Todos os status" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background/95 backdrop-blur-md border border-white/20">
+                  <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
                     <SelectItem value={undefined}>Todos os status</SelectItem>
                     <SelectItem value="confirmado">Confirmado</SelectItem>
                     <SelectItem value="pendente">Pendente</SelectItem>
@@ -677,7 +622,7 @@ const Schedule = () => {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar agendamentos..."
-                  className="pl-10 w-full sm:w-[240px] bg-white/5 border-white/20"
+                  className="pl-10 w-full sm:w-[240px]"
                 />
               </div>
             </div>
@@ -690,12 +635,12 @@ const Schedule = () => {
                   <TabsTrigger value="list">Lista</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="calendar" className="space-y-6 animate-fadeIn">
+                <TabsContent value="calendar" className="space-y-6">
                   {selectedProfessional ? (
                     // Se um profissional específico está selecionado, mostra apenas ele
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3 p-3 border-b border-white/10 bg-white/5 rounded-t-md">
-                        <div className="h-10 w-10 rounded-full overflow-hidden border border-white/20 shadow-sm">
+                      <div className="flex items-center gap-3 p-3 border-b border-white/10">
+                        <div className="h-10 w-10 rounded-full overflow-hidden">
                           <img 
                             src={mockProfessionals.find(p => p.id.toString() === selectedProfessional)?.photo} 
                             alt="Profissional" 
@@ -712,7 +657,7 @@ const Schedule = () => {
                         </div>
                       </div>
                       
-                      <div className="overflow-auto schedule-scroll-container p-2">
+                      <div className="overflow-auto">
                         {renderTimeSlots(
                           mockProfessionals.find(p => p.id.toString() === selectedProfessional)!
                         )}
@@ -721,9 +666,9 @@ const Schedule = () => {
                   ) : (
                     // Se nenhum profissional específico está selecionado, mostra todos
                     mockProfessionals.map(professional => (
-                      <div key={professional.id} className="space-y-4 bg-white/5 rounded-md shadow-sm hover:bg-white/8 transition-colors">
-                        <div className="flex items-center gap-3 p-4 border-b border-white/10">
-                          <div className="h-10 w-10 rounded-full overflow-hidden border border-white/20 shadow-sm">
+                      <div key={professional.id} className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 border-b border-white/10">
+                          <div className="h-10 w-10 rounded-full overflow-hidden">
                             <img src={professional.photo} alt={professional.name} className="h-full w-full object-cover" />
                           </div>
                           <div>
@@ -732,7 +677,7 @@ const Schedule = () => {
                           </div>
                         </div>
                         
-                        <div className="overflow-auto schedule-scroll-container p-2 pb-4">
+                        <div className="overflow-auto">
                           {renderTimeSlots(professional)}
                         </div>
                       </div>
@@ -740,62 +685,52 @@ const Schedule = () => {
                   )}
                 </TabsContent>
                 
-                <TabsContent value="list" className="animate-fadeIn">
-                  <div className="relative overflow-x-auto rounded-md shadow-sm">
-                    <table className="w-full text-sm">
-                      <thead className="text-xs uppercase bg-white/8">
+                <TabsContent value="list">
+                  <div className="relative overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs uppercase bg-white/5">
                         <tr>
-                          <th scope="col" className="px-6 py-3 text-left">Cliente</th>
-                          <th scope="col" className="px-6 py-3 text-left">Serviço</th>
-                          <th scope="col" className="px-6 py-3 text-left">Profissional</th>
-                          <th scope="col" className="px-6 py-3 text-left">Horário</th>
-                          <th scope="col" className="px-6 py-3 text-left">Valor</th>
-                          <th scope="col" className="px-6 py-3 text-left">Status</th>
-                          <th scope="col" className="px-6 py-3 text-right">Ações</th>
+                          <th scope="col" className="px-6 py-3">Cliente</th>
+                          <th scope="col" className="px-6 py-3">Serviço</th>
+                          <th scope="col" className="px-6 py-3">Profissional</th>
+                          <th scope="col" className="px-6 py-3">Horário</th>
+                          <th scope="col" className="px-6 py-3">Valor</th>
+                          <th scope="col" className="px-6 py-3">Status</th>
+                          <th scope="col" className="px-6 py-3">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredAppointments.length > 0 ? (
-                          filteredAppointments.map(appointment => (
-                            <tr key={appointment.id} className="border-b border-white/10 hover:bg-white/5">
-                              <td className="px-6 py-4 font-medium whitespace-nowrap">
-                                {appointment.clientName}
-                              </td>
-                              <td className="px-6 py-4">
-                                {appointment.serviceName}
-                              </td>
-                              <td className="px-6 py-4">
-                                {mockProfessionals.find(p => p.id === appointment.professionalId)?.name}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                {appointment.startTime} - {appointment.endTime}
-                              </td>
-                              <td className="px-6 py-4">
-                                R$ {appointment.price.toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className={cn(
-                                  "px-2 py-1 rounded text-xs",
-                                  appointment.status === "confirmado" ? "bg-emerald-500/20 text-emerald-300" : 
-                                  appointment.status === "pendente" ? "bg-amber-500/20 text-amber-300" : ""
-                                )}>
-                                  {appointment.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <Button variant="ghost" size="sm" className="h-8 px-2">
-                                  Editar
-                                </Button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
-                              Nenhum agendamento encontrado para os filtros selecionados
+                        {filteredAppointments.map(appointment => (
+                          <tr key={appointment.id} className="border-b border-white/10">
+                            <td className="px-6 py-4 font-medium whitespace-nowrap">
+                              {appointment.clientName}
+                            </td>
+                            <td className="px-6 py-4">
+                              {appointment.serviceName}
+                            </td>
+                            <td className="px-6 py-4">
+                              {mockProfessionals.find(p => p.id === appointment.professionalId)?.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {appointment.startTime} - {appointment.endTime}
+                            </td>
+                            <td className="px-6 py-4">
+                              R$ {appointment.price.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={cn(
+                                "px-2 py-1 rounded text-xs",
+                                appointment.status === "confirmado" ? "bg-green-500/20 text-green-300" : 
+                                appointment.status === "pendente" ? "bg-amber-500/20 text-amber-300" : ""
+                              )}>
+                                {appointment.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <Button variant="ghost" size="sm">Editar</Button>
                             </td>
                           </tr>
-                        )}
+                        ))}
                       </tbody>
                     </table>
                   </div>
