@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Calendar, Clock, DollarSign, Users } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 
