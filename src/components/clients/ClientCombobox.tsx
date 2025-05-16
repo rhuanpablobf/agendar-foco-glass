@@ -23,12 +23,12 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Ensure clients is always an array and handle empty arrays properly
+  // Ensure clients is always a valid array
   const clientsArray = Array.isArray(clients) ? clients : [];
   
   // Find the selected client safely
   const selectedClient = clientsArray.find(client => 
-    client?.id && client.id.toString() === value
+    client && client.id && client.id.toString() === value
   );
 
   // Filter clients based on search query with safeguards against undefined values
@@ -37,13 +37,19 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
         if (!client) return false;
         const name = client.name?.toLowerCase() || '';
         const phone = client.phone?.toLowerCase() || '';
+        const email = client.email?.toLowerCase() || '';
         const query = searchQuery.toLowerCase();
-        return name.includes(query) || phone.includes(query);
+        return name.includes(query) || phone.includes(query) || email?.includes(query);
       })
     : clientsArray;
 
-  // Ensure we have a valid array to render
+  // Always ensure we have a valid array to render
   const clientsToRender = filteredClients || [];
+  
+  // Fallback display value if no client is selected
+  const displayValue = value && selectedClient 
+    ? selectedClient.name 
+    : "Selecione um cliente";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,7 +63,7 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
             !value && "text-muted-foreground"
           )}
         >
-          {value && selectedClient ? selectedClient.name : "Selecione um cliente"}
+          {displayValue}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -69,47 +75,55 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
             value={searchQuery}
             onValueChange={setSearchQuery} 
           />
-          <CommandEmpty className="py-6 text-center">
-            <div className="space-y-1">
-              <p>Cliente não encontrado</p>
-              <p className="text-xs text-muted-foreground">
-                Tente outro nome ou crie um novo cliente
-              </p>
-            </div>
-          </CommandEmpty>
-          <CommandGroup className="max-h-[200px] overflow-auto">
-            {clientsToRender.length > 0 ? (
-              clientsToRender.map((client) => (
+          {clientsArray.length === 0 ? (
+            <CommandEmpty className="py-6 text-center">
+              <div className="space-y-1">
+                <p>Nenhum cliente disponível</p>
+                <p className="text-xs text-muted-foreground">
+                  Adicione clientes para começar
+                </p>
+              </div>
+            </CommandEmpty>
+          ) : clientsToRender.length === 0 ? (
+            <CommandEmpty className="py-6 text-center">
+              <div className="space-y-1">
+                <p>Cliente não encontrado</p>
+                <p className="text-xs text-muted-foreground">
+                  Tente outro nome ou crie um novo cliente
+                </p>
+              </div>
+            </CommandEmpty>
+          ) : (
+            <CommandGroup className="max-h-[200px] overflow-auto">
+              {clientsToRender.map((client) => (
                 <CommandItem
-                  key={client.id?.toString() || ''}
-                  value={client.name || ''}
+                  key={client?.id?.toString() || Math.random().toString()}
+                  value={client?.name || ''}
                   onSelect={() => {
-                    onChange(client.id.toString());
-                    setOpen(false);
-                    setSearchQuery("");
+                    if (client && client.id) {
+                      onChange(client.id.toString());
+                      setOpen(false);
+                      setSearchQuery("");
+                    }
                   }}
                   className="cursor-pointer"
                 >
                   <div className="flex items-start flex-1 gap-x-2">
                     <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">{client.name || ''}</p>
-                      <p className="text-xs text-muted-foreground">{client.phone || ''}</p>
+                      <p className="text-sm font-medium leading-none">{client?.name || ''}</p>
+                      <p className="text-xs text-muted-foreground">{client?.phone || ''}</p>
                     </div>
                   </div>
                   <Check
                     className={cn(
                       "ml-auto h-4 w-4",
-                      client.id.toString() === value ? "opacity-100" : "opacity-0"
+                      client?.id?.toString() === value ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
-              ))
-            ) : (
-              <CommandItem disabled className="py-6 text-center opacity-60">
-                Nenhum cliente encontrado
-              </CommandItem>
-            )}
-          </CommandGroup>
+              ))}
+            </CommandGroup>
+          )}
         </Command>
       </PopoverContent>
     </Popover>
