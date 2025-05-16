@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -87,16 +86,25 @@ export const ServiceForm = ({
     }
   }, [selectedServices, form.watch("comboDiscount"), isCombo, availableServices]);
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     if (isCombo && selectedServices.length < 2) {
       toast.error("Um combo deve conter pelo menos 2 serviços");
       return;
     }
     
-    onSubmit({
-      ...data,
+    // Create a properly typed ServiceFormData object
+    const serviceData: ServiceFormData = {
+      name: values.name,
+      description: values.description,
+      duration: values.duration,
+      price: values.price,
+      category: values.category,
+      isCombo: values.isCombo,
       comboServices: isCombo ? selectedServices : undefined,
-    });
+      comboDiscount: isCombo ? values.comboDiscount : undefined,
+    };
+    
+    onSubmit(serviceData);
   };
 
   const toggleServiceSelection = (serviceId: string) => {
