@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, ChevronsUpDown, UserPlus } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -42,6 +42,9 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
       })
     : clientsArray;
 
+  // Ensure we have a valid array to render
+  const clientsToRender = filteredClients || [];
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -74,11 +77,12 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
               </p>
             </div>
           </CommandEmpty>
+          {/* Ensure CommandGroup always has children */}
           <CommandGroup className="max-h-[200px] overflow-auto">
-            {filteredClients && filteredClients.length > 0 ? (
-              filteredClients.map((client) => (
+            {clientsToRender.length > 0 ? (
+              clientsToRender.map((client) => (
                 <CommandItem
-                  key={client.id}
+                  key={client.id?.toString() || ''}
                   value={client.name || ''}
                   onSelect={() => {
                     onChange(client.id.toString());
@@ -89,8 +93,8 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
                 >
                   <div className="flex items-start flex-1 gap-x-2">
                     <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">{client.name}</p>
-                      <p className="text-xs text-muted-foreground">{client.phone}</p>
+                      <p className="text-sm font-medium leading-none">{client.name || ''}</p>
+                      <p className="text-xs text-muted-foreground">{client.phone || ''}</p>
                     </div>
                   </div>
                   <Check
