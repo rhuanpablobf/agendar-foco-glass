@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,9 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { SubscriptionLimits } from '@/components/subscription/SubscriptionLimits';
+import { UpgradeModal } from '@/components/subscription/UpgradeModal';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const CompanyDashboard = () => {
   // Dados fictícios para o dashboard
@@ -41,12 +42,6 @@ const CompanyDashboard = () => {
       { time: '15:45', client: 'Carlos Oliveira', service: 'Barba' },
       { time: '16:30', client: 'Mariana Costa', service: 'Coloração' },
     ],
-    planUsage: {
-      plan: 'Gratuito',
-      usedAppointments: 3,
-      maxAppointments: 5,
-      percentUsed: 60,
-    },
     weeklyPerformance: [
       { name: 'Segunda', agendamentos: 6, faturamento: 450 },
       { name: 'Terça', agendamentos: 8, faturamento: 620 },
@@ -73,17 +68,8 @@ const CompanyDashboard = () => {
     });
   }, []);
 
-  // Calcular a percentagem usada do plano
-  const usedPercentage = useMemo(() => {
-    const { usedAppointments, maxAppointments } = dashboardData.planUsage;
-    return (usedAppointments / maxAppointments) * 100;
-  }, [dashboardData.planUsage]);
-
-  // Verificar se o limite foi atingido
-  const limitReached = useMemo(() => {
-    const { usedAppointments, maxAppointments } = dashboardData.planUsage;
-    return usedAppointments >= maxAppointments;
-  }, [dashboardData.planUsage]);
+  const { subscriptionStatus, checkCanSchedule } = useSubscription();
+  const limitReached = subscriptionStatus?.isLimitReached && subscriptionStatus?.plan === 'Gratuito';
 
   return (
     <MainLayout userType="company">
@@ -230,9 +216,16 @@ const CompanyDashboard = () => {
                 ))}
               </div>
               <div className="mt-4">
-                <Button variant="outline" className="w-full flex items-center justify-center" disabled={limitReached}>
+                <Button 
+                  variant="outline" 
+                  className="w-full flex items-center justify-center" 
+                  disabled={limitReached}
+                >
                   <Calendar className="mr-2 h-4 w-4" /> 
                   Novo Agendamento
+                  {limitReached && (
+                    <span className="ml-1 text-xs text-amber-200">(Limite atingido)</span>
+                  )}
                 </Button>
               </div>
             </CardContent>
@@ -272,123 +265,9 @@ const CompanyDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="dashboard-card border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Plano Atual: {dashboardData.planUsage.plan}</CardTitle>
-                  <CardDescription>
-                    Você utilizou {dashboardData.planUsage.usedAppointments} de {dashboardData.planUsage.maxAppointments} agendamentos este mês
-                  </CardDescription>
-                </div>
-                {limitReached && (
-                  <div className="bg-red-500/20 text-red-300 text-xs px-2 py-1 rounded-full border border-red-300/30">
-                    Limite atingido
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Progress value={usedPercentage} className="h-2" />
-                <div className="flex justify-between">
-                  <p className="text-sm">{dashboardData.planUsage.usedAppointments}/{dashboardData.planUsage.maxAppointments} agendamentos</p>
-                  <p className="text-sm text-primary font-medium">{dashboardData.planUsage.percentUsed}% usado</p>
-                </div>
-                
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="w-full sm:w-auto">
-                      Atualizar para o Plano Profissional
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
-                    <DialogHeader>
-                      <DialogTitle>Atualize para o Plano Profissional</DialogTitle>
-                      <DialogDescription>
-                        Desbloqueie recursos ilimitados e aproveite ao máximo o BeautySalon
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Card className="bg-white/5 border border-white/10 p-4">
-                          <CardTitle className="text-lg mb-2">Plano Gratuito</CardTitle>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-white/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              5 agendamentos/mês
-                            </li>
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-white/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              1 profissional
-                            </li>
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-white/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              Recursos básicos
-                            </li>
-                          </ul>
-                          <div className="mt-4 text-lg font-bold">Grátis</div>
-                          <div className="text-xs text-muted-foreground">Seu plano atual</div>
-                        </Card>
-                        
-                        <Card className="bg-primary/10 border border-primary/30 p-4">
-                          <CardTitle className="text-lg mb-2">Plano Profissional</CardTitle>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-primary/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              Agendamentos ilimitados
-                            </li>
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-primary/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              Múltiplos profissionais
-                            </li>
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-primary/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              Relatórios avançados
-                            </li>
-                            <li className="flex items-center">
-                              <span className="mr-2 bg-primary/20 rounded-full p-0.5">
-                                <TrendingUp className="h-3 w-3" />
-                              </span>
-                              Gestão financeira
-                            </li>
-                          </ul>
-                          <div className="mt-4 text-lg font-bold">R$49,90<span className="text-xs font-normal">/mês</span></div>
-                        </Card>
-                      </div>
-                    </div>
-                    <DialogFooter className="sm:justify-end">
-                      <Button type="button" variant="secondary" className="md:w-auto">
-                        Ver mais detalhes
-                      </Button>
-                      <Button type="button">
-                        Assinar plano profissional
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                
-                {limitReached && (
-                  <div className="mt-2 text-sm bg-amber-500/20 border border-amber-300/20 rounded-md p-3 text-amber-200">
-                    <p>Você atingiu o limite de agendamentos do plano gratuito. Atualize seu plano para continuar usando o sistema.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <SubscriptionLimits />
+          </div>
         </div>
       </div>
     </MainLayout>

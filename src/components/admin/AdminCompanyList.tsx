@@ -27,14 +27,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { PlanType } from '@/types/subscription';
 
 type Company = {
   id: string;
   name: string;
   email: string;
-  plan: 'Gratuito' | 'Profissional';
+  plan: PlanType;
   usedAppointments: number;
-  maxAppointments: number;
+  maxAppointments: number | 'unlimited';
   status: 'active' | 'inactive' | 'pending';
   registeredAt: string;
   lastPayment: string;
@@ -62,7 +63,7 @@ export const AdminCompanyList = () => {
       email: 'admin@moderncut.com',
       plan: 'Profissional',
       usedAppointments: 45,
-      maxAppointments: 999,
+      maxAppointments: 'unlimited',
       status: 'active',
       registeredAt: '14/05/2023',
       lastPayment: '01/06/2023',
@@ -84,7 +85,7 @@ export const AdminCompanyList = () => {
       email: 'studio@hairdesign.com',
       plan: 'Profissional',
       usedAppointments: 78,
-      maxAppointments: 999,
+      maxAppointments: 'unlimited',
       status: 'inactive',
       registeredAt: '10/04/2023',
       lastPayment: '10/05/2023',
@@ -120,13 +121,39 @@ export const AdminCompanyList = () => {
     }
   };
 
+  const getLimitStatus = (company: Company) => {
+    if (company.plan !== 'Gratuito' || company.maxAppointments === 'unlimited') {
+      return null;
+    }
+
+    const percentage = (company.usedAppointments / company.maxAppointments) * 100;
+    const isLimitReached = company.usedAppointments >= company.maxAppointments;
+
+    return (
+      <div className="flex items-center">
+        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+        <span>
+          {company.usedAppointments}/{company.maxAppointments}
+          {isLimitReached && (
+            <span className="ml-1 text-xs text-amber-200">(Limite atingido)</span>
+          )}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Empresas Registradas</CardTitle>
-        <CardDescription>
-          Gerencie todas as empresas registradas na plataforma
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Empresas Registradas</CardTitle>
+          <CardDescription>
+            Gerencie todas as empresas registradas na plataforma
+          </CardDescription>
+        </div>
+        <div className="flex gap-2">
+          <Button>Adicionar Empresa</Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4 flex items-center gap-2">
@@ -139,7 +166,6 @@ export const AdminCompanyList = () => {
               className="pl-8"
             />
           </div>
-          <Button>Adicionar Empresa</Button>
         </div>
 
         <div className="rounded-md border">
@@ -180,12 +206,14 @@ export const AdminCompanyList = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <span>
-                          {company.usedAppointments}/{company.maxAppointments === 999 ? '∞' : company.maxAppointments}
-                        </span>
-                      </div>
+                      {getLimitStatus(company) || (
+                        <div className="flex items-center">
+                          <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>
+                            {company.usedAppointments}/{company.maxAppointments === 'unlimited' ? '∞' : company.maxAppointments}
+                          </span>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>{getStatusBadge(company.status)}</TableCell>
                     <TableCell>{company.registeredAt}</TableCell>

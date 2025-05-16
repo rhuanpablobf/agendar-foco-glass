@@ -6,21 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Clock, DollarSign, ExternalLink, Globe, PieChart, User } from 'lucide-react';
 import ColorPicker from '@/components/settings/ColorPicker';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
+import { UpgradeButton } from '@/components/subscription/UpgradeButton';
 
 const Settings = () => {
-  // Dados mockados para o plano atual
-  const planData = {
-    name: "Gratuito",
-    usedAppointments: 3,
-    maxAppointments: 5,
-    percentUsed: 60,
-  };
+  // Subscription data
+  const { subscriptionStatus, planDetails, isLoading } = useSubscription();
 
   // Company data state
   const [companyData, setCompanyData] = useState({
@@ -324,42 +319,52 @@ const Settings = () => {
           <TabsContent value="subscription" className="space-y-4 mt-4">
             <Card className="border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
               <CardHeader>
-                <CardTitle>Plano Atual: {planData.name}</CardTitle>
+                <CardTitle>
+                  Plano Atual: {isLoading ? 'Carregando...' : subscriptionStatus?.plan}
+                </CardTitle>
                 <CardDescription>
-                  Você utilizou {planData.usedAppointments} de {planData.maxAppointments} agendamentos este mês
+                  {isLoading ? 'Carregando informações do seu plano...' : (
+                    subscriptionStatus?.plan === 'Gratuito' 
+                      ? `Você utilizou ${subscriptionStatus.usedAppointments} de ${subscriptionStatus.maxAppointments} agendamentos este mês` 
+                      : 'Seu plano inclui agendamentos ilimitados'
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Progress value={planData.percentUsed} className="h-2" />
-                  <div className="flex justify-between mt-1">
-                    <p className="text-sm">{planData.usedAppointments}/{planData.maxAppointments} agendamentos</p>
-                    <p className="text-sm text-primary font-medium">{planData.percentUsed}% usado</p>
+                {!isLoading && subscriptionStatus?.plan === 'Gratuito' && (
+                  <div>
+                    <Progress value={subscriptionStatus.percentUsed} className="h-2" />
+                    <div className="flex justify-between mt-1">
+                      <p className="text-sm">{subscriptionStatus.usedAppointments}/{subscriptionStatus.maxAppointments} agendamentos</p>
+                      <p className="text-sm text-primary font-medium">{subscriptionStatus.percentUsed}% usado</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="bg-white/5 border border-white/10 p-4">
+                  <Card className={`${subscriptionStatus?.plan === 'Gratuito' ? 'bg-white/5 border border-white/10' : 'bg-primary/10 border border-primary/30'} p-4`}>
                     <CardTitle className="text-lg mb-2">Plano Gratuito</CardTitle>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center">
                         <span className="mr-2 bg-white/20 rounded-full p-0.5">
                           <Clock className="h-3 w-3" />
                         </span>
-                        5 agendamentos/mês
+                        {planDetails?.Gratuito.maxAppointments} agendamentos/mês
                       </li>
                       <li className="flex items-center">
                         <span className="mr-2 bg-white/20 rounded-full p-0.5">
                           <User className="h-3 w-3" />
                         </span>
-                        1 profissional
+                        {planDetails?.Gratuito.maxProfessionals} profissional
                       </li>
                     </ul>
                     <div className="mt-4 text-lg font-bold">Grátis</div>
-                    <div className="text-xs text-muted-foreground">Seu plano atual</div>
+                    {subscriptionStatus?.plan === 'Gratuito' && (
+                      <div className="text-xs text-muted-foreground">Seu plano atual</div>
+                    )}
                   </Card>
                   
-                  <Card className="bg-primary/10 border border-primary/30 p-4">
+                  <Card className={`${subscriptionStatus?.plan === 'Profissional' ? 'bg-primary/10 border border-primary/30' : 'bg-white/5 border border-white/10'} p-4`}>
                     <CardTitle className="text-lg mb-2">Plano Profissional</CardTitle>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center">
@@ -388,13 +393,79 @@ const Settings = () => {
                       </li>
                     </ul>
                     <div className="mt-4 text-lg font-bold">R$49,90<span className="text-xs font-normal">/mês</span></div>
-                    <div className="mt-2">
-                      <Button className="w-full">Assinar plano</Button>
-                    </div>
+                    {subscriptionStatus?.plan === 'Profissional' && (
+                      <div className="text-xs text-muted-foreground">Seu plano atual</div>
+                    )}
                   </Card>
                 </div>
+
+                {subscriptionStatus?.plan === 'Gratuito' && (
+                  <div className="flex justify-end">
+                    <UpgradeButton label="Assinar plano" />
+                  </div>
+                )}
+
+                {subscriptionStatus?.plan === 'Profissional' && (
+                  <div className="flex justify-end">
+                    <Button variant="outline">
+                      Gerenciar assinatura
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
+
+            {subscriptionStatus?.plan === 'Profissional' && (
+              <Card className="border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
+                <CardHeader>
+                  <CardTitle>Histórico de Pagamentos</CardTitle>
+                  <CardDescription>
+                    Últimas faturas e cobranças do seu plano
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-md border">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="py-2 px-4 text-left">Data</th>
+                          <th className="py-2 px-4 text-left">Valor</th>
+                          <th className="py-2 px-4 text-left">Status</th>
+                          <th className="py-2 px-4 text-left">Recibo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="py-2 px-4">16/05/2023</td>
+                          <td className="py-2 px-4">R$ 49,90</td>
+                          <td className="py-2 px-4">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-200">
+                              Pago
+                            </span>
+                          </td>
+                          <td className="py-2 px-4">
+                            <Button variant="link" className="p-0 h-auto">Ver recibo</Button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 px-4">16/04/2023</td>
+                          <td className="py-2 px-4">R$ 49,90</td>
+                          <td className="py-2 px-4">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-200">
+                              Pago
+                            </span>
+                          </td>
+                          <td className="py-2 px-4">
+                            <Button variant="link" className="p-0 h-auto">Ver recibo</Button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
