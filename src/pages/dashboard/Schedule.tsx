@@ -22,6 +22,7 @@ import {
   PopoverTrigger 
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { ClientCombobox } from '@/components/clients/ClientCombobox';
 
 // Estilos CSS personalizados para o grid de horários
 import './schedule.css';
@@ -134,6 +135,7 @@ const Schedule = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
   const [showNewClientModal, setShowNewClientModal] = useState(false);
   const [planLimitReached, setPlanLimitReached] = useState(false); // Mock: controle de limite do plano
+  const [clientSearchQuery, setClientSearchQuery] = useState("");
 
   // Formulário para novo agendamento
   const appointmentForm = useForm<AppointmentFormValues>({
@@ -276,39 +278,27 @@ const Schedule = () => {
                         )}
                       />
                       
-                      <div className="flex justify-between items-center gap-2">
+                      <div className="flex justify-between items-start gap-2">
                         <FormField
                           control={appointmentForm.control}
                           name="client"
                           render={({ field }) => (
                             <FormItem className="flex-1">
                               <FormLabel>Cliente</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um cliente" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
-                                  {mockClients.map(client => (
-                                    <SelectItem key={client.id} value={client.id.toString()}>
-                                      {client.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <ClientCombobox 
+                                  clients={mockClients}
+                                  selectedClientId={field.value}
+                                  onClientSelect={field.onChange}
+                                  onAddNewClient={() => setShowNewClientModal(true)}
+                                  error={!!appointmentForm.formState.errors.client}
+                                  placeholder="Selecione um cliente"
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        <div className="mt-8">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setShowNewClientModal(true)}
-                          >
-                            <UserPlus className="h-4 w-4" />
-                          </Button>
-                        </div>
                       </div>
 
                       <FormField
