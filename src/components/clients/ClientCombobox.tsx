@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
@@ -23,7 +23,7 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Ensure clients is always an array, even if it's undefined
+  // Ensure clients is always an array
   const clientsArray = Array.isArray(clients) ? clients : [];
   
   const selectedClient = clientsArray.find(client => client.id.toString() === value);
@@ -68,9 +68,9 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
               </p>
             </div>
           </CommandEmpty>
-          {filteredClients.length > 0 && (
-            <CommandGroup className="max-h-[200px] overflow-auto">
-              {filteredClients.map((client) => (
+          <CommandGroup className="max-h-[200px] overflow-auto">
+            {filteredClients.length > 0 ? (
+              filteredClients.map((client) => (
                 <CommandItem
                   key={client.id}
                   value={client.name}
@@ -94,9 +94,13 @@ export function ClientCombobox({ clients = [], value, onChange }: ClientCombobox
                     )}
                   />
                 </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
+              ))
+            ) : (
+              <CommandItem disabled className="py-6 text-center opacity-60">
+                Nenhum cliente encontrado
+              </CommandItem>
+            )}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>
