@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -84,11 +85,40 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fadeIn': {
+					from: {
+						opacity: '0'
+					},
+					to: {
+						opacity: '1'
+					}
+				},
+				'slideUp': {
+					from: {
+						transform: 'translateY(10px)',
+						opacity: '0'
+					},
+					to: {
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fadeIn': 'fadeIn 0.3s ease-in',
+				'slideUp': 'slideUp 0.4s ease-out'
+			},
+			backgroundImage: {
+				'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%)',
+				'accent-gradient': 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)'
+			},
+			boxShadow: {
+				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
+				'glass-sm': '0 4px 16px 0 rgba(31, 38, 135, 0.07)',
+				'glass-lg': '0 12px 48px 0 rgba(31, 38, 135, 0.15)'
 			}
 		}
 	},
