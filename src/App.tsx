@@ -116,14 +116,12 @@ const App = () => (
               } />
             </Route>
             
-            {/* Rotas de administrador */}
-            <Route path="/admin">
-              <Route index element={<AdminDashboard />} />
-              <Route path="companies" element={<AdminDashboard />} />
-              <Route path="plans" element={<AdminDashboard />} />
-              <Route path="subadmins" element={<AdminDashboard />} />
-              <Route path="settings" element={<AdminDashboard />} />
-            </Route>
+            {/* Rotas de administrador - updated to use the same component but with different paths */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/companies" element={<AdminDashboard />} />
+            <Route path="/admin/plans" element={<AdminDashboard />} />
+            <Route path="/admin/subadmins" element={<AdminDashboard />} />
+            <Route path="/admin/settings" element={<AdminDashboard />} />
             
             {/* Redirecionamentos para manter compatibilidade temporária */}
             <Route path="/agenda" element={<Navigate to="/dashboard/schedule" replace />} />

@@ -1,13 +1,16 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useLocation } from 'react-router-dom';
+import { AdminDashboardContent } from '@/components/admin/AdminDashboardContent';
 import { AdminCompanyList } from '@/components/admin/AdminCompanyList';
 import { AdminPlanManagement } from '@/components/admin/AdminPlanManagement';
 import { AdminSubadminManagement } from '@/components/admin/AdminSubadminManagement';
-import { AdminDashboardContent } from '@/components/admin/AdminDashboardContent';
 
 const AdminDashboard = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
   // Dados mockados para o dashboard de admin
   const adminData = {
     mrr: 15850,
@@ -40,40 +43,50 @@ const AdminDashboard = () => {
     ]
   };
 
+  // Set the page title based on the current path
+  let pageTitle = "Dashboard Administrativo";
+  let pageDescription = "Gerencie os clientes e o desempenho do BeautySalon";
+  
+  if (currentPath.includes('/admin/companies')) {
+    pageTitle = "Empresas";
+    pageDescription = "Gerencie as empresas cadastradas na plataforma";
+  } else if (currentPath.includes('/admin/plans')) {
+    pageTitle = "Planos";
+    pageDescription = "Configure os planos disponíveis para seus clientes";
+  } else if (currentPath.includes('/admin/subadmins')) {
+    pageTitle = "Subadmins";
+    pageDescription = "Gerencie os administradores auxiliares da plataforma";
+  } else if (currentPath.includes('/admin/settings')) {
+    pageTitle = "Configurações";
+    pageDescription = "Configure as definições do sistema";
+  }
+
+  // Render the appropriate content based on the current path
+  const renderContent = () => {
+    if (currentPath.includes('/admin/companies')) {
+      return <AdminCompanyList />;
+    } else if (currentPath.includes('/admin/plans')) {
+      return <AdminPlanManagement />;
+    } else if (currentPath.includes('/admin/subadmins')) {
+      return <AdminSubadminManagement />;
+    } else if (currentPath.includes('/admin/settings')) {
+      return <div className="space-y-6">Configurações do sistema</div>;
+    } else {
+      return <AdminDashboardContent adminData={adminData} />;
+    }
+  };
+
   return (
     <MainLayout userType="admin">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard Administrativo</h1>
+          <h1 className="text-3xl font-bold">{pageTitle}</h1>
           <p className="text-muted-foreground">
-            Gerencie os clientes e o desempenho do BeautySalon
+            {pageDescription}
           </p>
         </div>
 
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList>
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="companies">Empresas</TabsTrigger>
-            <TabsTrigger value="plans">Planos</TabsTrigger>
-            <TabsTrigger value="subadmins">Subadmins</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dashboard" className="space-y-6">
-            <AdminDashboardContent adminData={adminData} />
-          </TabsContent>
-          
-          <TabsContent value="companies" className="space-y-6">
-            <AdminCompanyList />
-          </TabsContent>
-          
-          <TabsContent value="plans" className="space-y-6">
-            <AdminPlanManagement />
-          </TabsContent>
-          
-          <TabsContent value="subadmins" className="space-y-6">
-            <AdminSubadminManagement />
-          </TabsContent>
-        </Tabs>
+        {renderContent()}
       </div>
     </MainLayout>
   );
