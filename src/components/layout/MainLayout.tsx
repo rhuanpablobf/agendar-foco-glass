@@ -6,7 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  userType?: 'company' | 'professional' | 'client';
+  userType?: 'company' | 'professional' | 'client' | 'admin';
 }
 
 export const MainLayout = ({ children, userType = 'company' }: MainLayoutProps) => {

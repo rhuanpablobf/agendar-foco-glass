@@ -14,9 +14,9 @@ export const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({ onUpgradeClick }
   
   if (!subscriptionStatus) return null;
   
-  const { plan, appointmentsUsed, appointmentsLimit } = subscriptionStatus;
+  const { plan, usedAppointments, maxAppointments } = subscriptionStatus;
   
-  if (plan !== 'Gratuito' || appointmentsUsed < appointmentsLimit) {
+  if (plan !== 'Gratuito' || usedAppointments < (maxAppointments === 'unlimited' ? Infinity : maxAppointments)) {
     return null;
   }
   
@@ -26,7 +26,7 @@ export const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({ onUpgradeClick }
       <AlertTitle>Limite de agendamentos atingido</AlertTitle>
       <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div>
-          Você atingiu o limite de {appointmentsLimit} agendamentos do plano gratuito.
+          Você atingiu o limite de {typeof maxAppointments === 'number' ? maxAppointments : 'ilimitado'} agendamentos do plano gratuito.
           Faça upgrade para continuar agendando.
         </div>
         <Button onClick={onUpgradeClick} className="sm:w-auto w-full">
