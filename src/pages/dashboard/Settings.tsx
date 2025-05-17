@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { Clock, DollarSign, ExternalLink, Globe, PieChart, User } from 'lucide-react';
+import { Clock, DollarSign, ExternalLink, Globe, PieChart, User, Users } from 'lucide-react';
 import ColorPicker from '@/components/settings/ColorPicker';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { UpgradeButton } from '@/components/subscription/UpgradeButton';
 import { Progress } from '@/components/ui/progress';
+import { UserManagement } from '@/components/settings/UserManagement';
 
 const Settings = () => {
   // Subscription data
@@ -99,10 +100,11 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="company">Empresa</TabsTrigger>
             <TabsTrigger value="appearance">Aparência</TabsTrigger>
             <TabsTrigger value="subscription">Assinatura</TabsTrigger>
+            <TabsTrigger value="users">Usuários</TabsTrigger>
           </TabsList>
           
           <TabsContent value="company" className="space-y-4 mt-4">
@@ -466,6 +468,20 @@ const Settings = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+          
+          <TabsContent value="users" className="mt-4">
+            <Card className="border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
+              <CardHeader>
+                <CardTitle>Gerenciamento de Usuários</CardTitle>
+                <CardDescription>
+                  Crie e gerencie os usuários da sua empresa, definindo permissões específicas de acesso
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserManagement />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

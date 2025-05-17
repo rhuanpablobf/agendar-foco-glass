@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -10,17 +9,17 @@ import {
   Settings,
   Users,
   User,
-  Clock,
-  FileText,
   Package
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePermission } from '@/hooks/usePermission';
 
 interface NavLink {
   name: string;
   href: string;
   icon: React.ForwardRefExoticComponent<any>;
   requiresPro?: boolean;
+  permission?: 'agenda' | 'clients' | 'professionals' | 'services' | 'financial' | 'reports' | 'settings';
 }
 
 interface SidebarLinksProps {
@@ -30,18 +29,59 @@ interface SidebarLinksProps {
 export const SidebarLinks = ({ userType }: SidebarLinksProps) => {
   const location = useLocation();
   const { subscriptionStatus } = useSubscription();
+  const { hasPermission } = usePermission();
   const isProfessionalPlan = subscriptionStatus?.plan === 'Profissional';
 
   const companyLinks: NavLink[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Agenda', href: '/dashboard/schedule', icon: Calendar },
-    { name: 'Clientes', href: '/dashboard/clients', icon: Users },
-    { name: 'Profissionais', href: '/dashboard/professionals', icon: User },
-    { name: 'Serviços', href: '/dashboard/services', icon: Package },
-    { name: 'Financeiro', href: '/dashboard/financial', icon: CreditCard, requiresPro: true },
-    { name: 'Relatórios', href: '/dashboard/reports', icon: BarChart3, requiresPro: true },
-    { name: 'Assinatura', href: '/dashboard/subscription', icon: Clock },
-    { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
+    { 
+      name: 'Dashboard', 
+      href: '/dashboard', 
+      icon: Home 
+    },
+    { 
+      name: 'Agenda', 
+      href: '/dashboard/schedule', 
+      icon: Calendar, 
+      permission: 'agenda'
+    },
+    { 
+      name: 'Clientes', 
+      href: '/dashboard/clients', 
+      icon: Users,
+      permission: 'clients'
+    },
+    { 
+      name: 'Profissionais', 
+      href: '/dashboard/professionals', 
+      icon: User,
+      permission: 'professionals'
+    },
+    { 
+      name: 'Serviços', 
+      href: '/dashboard/services', 
+      icon: Package,
+      permission: 'services'
+    },
+    { 
+      name: 'Financeiro', 
+      href: '/dashboard/financial', 
+      icon: CreditCard, 
+      requiresPro: true,
+      permission: 'financial'
+    },
+    { 
+      name: 'Relatórios', 
+      href: '/dashboard/reports', 
+      icon: BarChart3, 
+      requiresPro: true,
+      permission: 'reports'
+    },
+    { 
+      name: 'Configurações', 
+      href: '/dashboard/settings', 
+      icon: Settings,
+      permission: 'settings'
+    },
   ];
 
   const professionalLinks: NavLink[] = [
@@ -80,6 +120,11 @@ export const SidebarLinks = ({ userType }: SidebarLinksProps) => {
         {links.map((link) => {
           // Skip pro features if not on professional plan and not admin
           if (link.requiresPro && userType === 'company' && !isProfessionalPlan) {
+            return null;
+          }
+          
+          // Skip menu items that the user doesn't have permission for
+          if (link.permission && userType === 'company' && !hasPermission(link.permission)) {
             return null;
           }
           
