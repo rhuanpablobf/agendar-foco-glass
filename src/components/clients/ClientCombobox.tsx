@@ -94,7 +94,7 @@ export function ClientCombobox({
               />
               
               <ClientComboboxList
-                filteredClients={filteredClients}
+                filteredClients={filteredClients ?? []}
                 selectedClientId={selectedClientId}
                 onClientSelect={onClientSelect}
                 onClose={() => setOpen(false)}
