@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Copy } from 'lucide-react';
+import { Copy, Utensils } from 'lucide-react';
+import { Toggle } from '@/components/ui/toggle';
 
 interface ScheduleDay {
   active: boolean;
@@ -12,6 +13,7 @@ interface ScheduleDay {
   end: string;
   breakStart: string;
   breakEnd: string;
+  breakEnabled?: boolean;
 }
 
 interface Schedule {
@@ -44,6 +46,15 @@ export const ScheduleConfig: React.FC<ScheduleConfigProps> = ({
     { name: 'saturday', label: 'Sábado' },
     { name: 'sunday', label: 'Domingo' }
   ];
+
+  // Inicializar o estado "breakEnabled" como true para cada dia, se não estiver definido
+  React.useEffect(() => {
+    days.forEach((day) => {
+      if (schedule[day.name].breakEnabled === undefined) {
+        onChange(day.name, 'breakEnabled', true);
+      }
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -106,29 +117,49 @@ export const ScheduleConfig: React.FC<ScheduleConfigProps> = ({
               </div>
               
               <div className="space-y-4">
-                <h4 className="text-sm font-medium mb-2">Intervalo / Almoço</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`${day.name}-break-start`} className="text-xs">Início</Label>
-                    <Input
-                      id={`${day.name}-break-start`}
-                      type="time"
-                      value={schedule[day.name].breakStart}
-                      onChange={(e) => onChange(day.name, 'breakStart', e.target.value)}
-                      disabled={!schedule[day.name].active}
-                    />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <Utensils className="h-4 w-4 mr-1" />
+                    <h4 className="text-sm font-medium">Intervalo / Almoço</h4>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`${day.name}-break-end`} className="text-xs">Fim</Label>
-                    <Input
-                      id={`${day.name}-break-end`}
-                      type="time"
-                      value={schedule[day.name].breakEnd}
-                      onChange={(e) => onChange(day.name, 'breakEnd', e.target.value)}
+                  <div className="flex items-center">
+                    <Switch
+                      id={`${day.name}-break-enabled`}
+                      checked={schedule[day.name].breakEnabled !== false}
+                      onCheckedChange={(checked) => onChange(day.name, 'breakEnabled', checked)}
                       disabled={!schedule[day.name].active}
+                      className={schedule[day.name].breakEnabled !== false ? "bg-green-500 hover:bg-green-600" : ""}
                     />
+                    <Label htmlFor={`${day.name}-break-enabled`} className="ml-2 text-xs">
+                      {schedule[day.name].breakEnabled !== false ? 'Ativado' : 'Desativado'}
+                    </Label>
                   </div>
                 </div>
+
+                {schedule[day.name].breakEnabled !== false && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`${day.name}-break-start`} className="text-xs">Início</Label>
+                      <Input
+                        id={`${day.name}-break-start`}
+                        type="time"
+                        value={schedule[day.name].breakStart}
+                        onChange={(e) => onChange(day.name, 'breakStart', e.target.value)}
+                        disabled={!schedule[day.name].active}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${day.name}-break-end`} className="text-xs">Fim</Label>
+                      <Input
+                        id={`${day.name}-break-end`}
+                        type="time"
+                        value={schedule[day.name].breakEnd}
+                        onChange={(e) => onChange(day.name, 'breakEnd', e.target.value)}
+                        disabled={!schedule[day.name].active}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

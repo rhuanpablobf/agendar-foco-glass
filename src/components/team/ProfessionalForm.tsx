@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,7 @@ interface ScheduleDay {
   end: string;
   breakStart: string;
   breakEnd: string;
+  breakEnabled?: boolean;
 }
 
 interface Schedule {
@@ -61,7 +61,8 @@ const DEFAULT_SCHEDULE_DAY: ScheduleDay = {
   start: '09:00',
   end: '18:00',
   breakStart: '12:00',
-  breakEnd: '13:00'
+  breakEnd: '13:00',
+  breakEnabled: true
 };
 
 const DEFAULT_SCHEDULE: Schedule = {
