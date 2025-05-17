@@ -16,14 +16,14 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 import { SubscriptionLimits } from '@/components/subscription/SubscriptionLimits';
 
-// Import components (these should exist from previous refactoring)
+// Import components
 import { AppointmentForm } from '@/components/schedule/AppointmentForm';
 import { ScheduleFilters } from '@/components/schedule/ScheduleFilters';
 import { ScheduleCalendarView } from '@/components/schedule/ScheduleCalendarView';
 import { ScheduleListView } from '@/components/schedule/ScheduleListView';
 import { PlanLimitAlert } from '@/components/schedule/PlanLimitAlert';
 
-// Import mock data (should exist from previous refactoring)
+// Import mock data
 import { mockAppointments, mockProfessionals, mockClients, mockServices } from '@/components/schedule/mockData';
 
 // CSS import

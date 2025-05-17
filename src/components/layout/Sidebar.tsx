@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -27,12 +28,19 @@ interface SidebarProps {
   setIsMobileOpen: (open: boolean) => void;
 }
 
+interface NavLink {
+  name: string;
+  href: string;
+  icon: React.ForwardRefExoticComponent<any>;
+  requiresPro?: boolean;
+}
+
 export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProps) {
   const location = useLocation();
   const { subscriptionStatus } = useSubscription();
   const isProfessionalPlan = subscriptionStatus?.plan === 'Profissional';
 
-  const companyLinks = [
+  const companyLinks: NavLink[] = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Agenda', href: '/dashboard/schedule', icon: Calendar },
     { name: 'Clientes', href: '/dashboard/clients', icon: Users },
@@ -44,14 +52,14 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
     { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
   ];
 
-  const professionalLinks = [
+  const professionalLinks: NavLink[] = [
     { name: 'Dashboard', href: '/professional', icon: Home },
     { name: 'Minha Agenda', href: '/professional/schedule', icon: Calendar },
     { name: 'Meus Clientes', href: '/professional/clients', icon: Users },
     { name: 'Configurações', href: '/professional/settings', icon: Settings },
   ];
 
-  const clientLinks = [
+  const clientLinks: NavLink[] = [
     { name: 'Dashboard', href: '/client', icon: Home },
     { name: 'Meus Agendamentos', href: '/client/appointments', icon: Calendar },
     { name: 'Histórico', href: '/client/history', icon: FileText },
