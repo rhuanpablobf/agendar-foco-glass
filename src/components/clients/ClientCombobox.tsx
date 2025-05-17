@@ -49,14 +49,18 @@ export function ClientCombobox({
   const [isLoading, setIsLoading] = useState(false);
   const [filteredClients, setFilteredClients] = useState<ClientOption[]>([]);
 
+  // Ensure clients is always an array
+  const safeClients = Array.isArray(clients) ? clients : [];
+
   // Get the currently selected client
-  const selectedClient = clients?.find(
-    (client) => client.id.toString() === selectedClientId?.toString()
+  const selectedClient = safeClients.find(
+    (client) => client.id?.toString() === selectedClientId?.toString()
   );
 
   // Filter clients based on search query
   useEffect(() => {
-    if (!Array.isArray(clients)) {
+    // Ensure we're working with an array
+    if (!Array.isArray(safeClients)) {
       setFilteredClients([]);
       return;
     }
@@ -66,31 +70,28 @@ export function ClientCombobox({
     
     const timeoutId = setTimeout(() => {
       if (!searchValue.trim()) {
-        setFilteredClients(clients);
+        setFilteredClients(safeClients);
       } else {
         const query = searchValue.toLowerCase().trim();
-        const filtered = clients.filter(
+        const filtered = safeClients.filter(
           (client) => 
-            client.name.toLowerCase().includes(query) ||
-            (client.phone && client.phone.includes(query)) ||
-            (client.email && client.email.toLowerCase().includes(query))
+            (client?.name?.toLowerCase().includes(query)) ||
+            (client?.phone && client.phone.includes(query)) ||
+            (client?.email && client.email.toLowerCase().includes(query))
         );
-        setFilteredClients(filtered);
+        // Always ensure filteredClients is an array
+        setFilteredClients(Array.isArray(filtered) ? filtered : []);
       }
       setIsLoading(false);
     }, 150); // Small delay for better UX
     
     return () => clearTimeout(timeoutId);
-  }, [searchValue, clients]);
+  }, [searchValue, safeClients]);
 
-  // Initialize filtered clients with all clients when component mounts
+  // Initialize filtered clients with safe clients when component mounts
   useEffect(() => {
-    if (Array.isArray(clients)) {
-      setFilteredClients(clients);
-    } else {
-      setFilteredClients([]);
-    }
-  }, []);
+    setFilteredClients(Array.isArray(safeClients) ? safeClients : []);
+  }, [safeClients]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -147,12 +148,12 @@ export function ClientCombobox({
                 )}
               </CommandEmpty>
               
-              {filteredClients && filteredClients.length > 0 && (
+              {Array.isArray(filteredClients) && filteredClients.length > 0 ? (
                 <CommandGroup className="max-h-[300px] overflow-y-auto">
                   {filteredClients.map((client) => (
                     <CommandItem
                       key={client.id}
-                      value={client.id.toString()}
+                      value={client.id?.toString() ?? ""}
                       onSelect={(currentValue) => {
                         onClientSelect(currentValue);
                         setSearchValue("");
@@ -168,13 +169,13 @@ export function ClientCombobox({
                           </span>
                         )}
                       </div>
-                      {selectedClientId?.toString() === client.id.toString() && (
+                      {selectedClientId?.toString() === client.id?.toString() && (
                         <Check className="h-4 w-4 text-emerald-500" />
                       )}
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              )}
+              ) : null}
             </>
           )}
 
