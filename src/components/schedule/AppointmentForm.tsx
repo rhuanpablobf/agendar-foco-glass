@@ -94,6 +94,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [showNoResults, setShowNoResults] = useState(false);
   const commandRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<AppointmentFormValues>({
@@ -121,8 +122,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
       setFilteredClients(filtered);
       setIsSearchOpen(true);
       setSelectedIndex(-1);
+      setShowNoResults(filtered.length === 0);
     } else {
       setFilteredClients([]);
+      setShowNoResults(false);
+      if (searchQuery.length === 0) {
+        setIsSearchOpen(false);
+      }
     }
   }, [searchQuery, clients]);
 
@@ -164,12 +170,15 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
       setSearchQuery(client.name);
     }
     setIsSearchOpen(false);
+    setShowNoResults(false);
   };
   
   // Clear search query
   const clearSearch = () => {
     setSearchQuery('');
     form.setValue('client', '');
+    setShowNoResults(false);
+    setIsSearchOpen(false);
   };
 
   // Handle form submission
@@ -216,6 +225,12 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     
     const client = clients.find(c => c.id.toString() === clientId);
     return client ? client.name : '';
+  };
+
+  // Handle new client button click
+  const handleNewClientClick = () => {
+    onNewClient();
+    setIsSearchOpen(false);
   };
 
   return (
@@ -283,17 +298,21 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
-                            ) : (
+                            ) : showNoResults ? (
                               <CommandEmpty className="py-6 px-2">
                                 <div className="text-center space-y-4">
                                   <p>Nenhum cliente encontrado com "{searchQuery}"</p>
-                                  <Button type="button" onClick={onNewClient}>
+                                  <Button 
+                                    type="button" 
+                                    onClick={handleNewClientClick}
+                                    className="bg-primary hover:bg-primary/90"
+                                  >
                                     <UserPlus className="mr-2 h-4 w-4" />
                                     Criar novo cliente
                                   </Button>
                                 </div>
                               </CommandEmpty>
-                            )}
+                            ) : null}
                           </CommandList>
                         </Command>
                       </div>
