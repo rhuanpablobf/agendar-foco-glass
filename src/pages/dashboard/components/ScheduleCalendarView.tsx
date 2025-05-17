@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { mockProfessionals, timeSlots } from '../data/mockData';
@@ -9,12 +10,17 @@ interface ScheduleCalendarViewProps {
 }
 
 export function ScheduleCalendarView({ filteredAppointments, selectedProfessional }: ScheduleCalendarViewProps) {
+  // Ensure arrays are valid
+  const safeAppointments = Array.isArray(filteredAppointments) ? filteredAppointments : [];
+  const safeProfessionals = Array.isArray(mockProfessionals) ? mockProfessionals : [];
+  const safeTimeSlots = Array.isArray(timeSlots) ? timeSlots : [];
+  
   // Renderizar as células de horário para cada profissional
-  const renderTimeSlots = (professional: typeof mockProfessionals[0]) => {
+  const renderTimeSlots = (professional: typeof safeProfessionals[0]) => {
     return (
       <div className="grid grid-cols-24 gap-1">
-        {timeSlots.map((time) => {
-          const appointment = filteredAppointments.find(
+        {safeTimeSlots.map((time) => {
+          const appointment = safeAppointments.find(
             app => app.professionalId === professional.id && app.startTime === time
           );
 
@@ -51,7 +57,7 @@ export function ScheduleCalendarView({ filteredAppointments, selectedProfessiona
 
   if (selectedProfessional) {
     // Se um profissional específico está selecionado, mostra apenas ele
-    const professional = mockProfessionals.find(p => p.id.toString() === selectedProfessional);
+    const professional = safeProfessionals.find(p => p.id.toString() === selectedProfessional);
     if (!professional) return null;
     
     return (
@@ -59,7 +65,7 @@ export function ScheduleCalendarView({ filteredAppointments, selectedProfessiona
         <div className="flex items-center gap-3 p-3 border-b border-white/10">
           <div className="h-10 w-10 rounded-full overflow-hidden">
             <img 
-              src={professional.photo} 
+              src={professional.photo || ''}
               alt="Profissional" 
               className="h-full w-full object-cover"
             />
@@ -80,11 +86,11 @@ export function ScheduleCalendarView({ filteredAppointments, selectedProfessiona
   // Se nenhum profissional específico está selecionado, mostra todos
   return (
     <>
-      {mockProfessionals.map(professional => (
+      {safeProfessionals.map(professional => (
         <div key={professional.id} className="space-y-4">
           <div className="flex items-center gap-3 p-3 border-b border-white/10">
             <div className="h-10 w-10 rounded-full overflow-hidden">
-              <img src={professional.photo} alt={professional.name} className="h-full w-full object-cover" />
+              <img src={professional.photo || ''} alt={professional.name} className="h-full w-full object-cover" />
             </div>
             <div>
               <div className="font-medium">{professional.name}</div>

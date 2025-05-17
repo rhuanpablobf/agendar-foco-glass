@@ -47,7 +47,7 @@ export function ClientCombobox({
     isLoading, 
     filteredClients, 
     safeClients 
-  } = useClientSearch(clients);
+  } = useClientSearch(clients || []);
 
   // Get the currently selected client
   const selectedClient = safeClients.find(
@@ -91,6 +91,7 @@ export function ClientCombobox({
               <ClientComboboxEmpty 
                 onAddNewClient={onAddNewClient} 
                 onClose={() => setOpen(false)} 
+                show={Array.isArray(filteredClients) && filteredClients.length === 0}
               />
               
               <ClientComboboxList

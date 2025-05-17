@@ -31,6 +31,9 @@ export function ScheduleFilters({
   searchQuery,
   setSearchQuery
 }: ScheduleFiltersProps) {
+  // Ensure mockProfessionals is always an array
+  const safeProfessionals = Array.isArray(mockProfessionals) ? mockProfessionals : [];
+
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div className="flex items-center gap-2">
@@ -58,7 +61,7 @@ export function ScheduleFilters({
           </SelectTrigger>
           <SelectContent className="bg-background/80 backdrop-blur-sm border border-white/20">
             <SelectItem value={undefined}>Todos os profissionais</SelectItem>
-            {mockProfessionals.map(professional => (
+            {safeProfessionals.map(professional => (
               <SelectItem key={professional.id} value={professional.id.toString()}>
                 {professional.name}
               </SelectItem>

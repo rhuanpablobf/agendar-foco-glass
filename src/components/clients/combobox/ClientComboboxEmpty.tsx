@@ -1,38 +1,45 @@
 
 import React from "react";
-import { UserPlus } from "lucide-react";
 import { CommandEmpty } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
 
 interface ClientComboboxEmptyProps {
   onAddNewClient?: () => void;
   onClose: () => void;
+  show?: boolean;
 }
 
-export function ClientComboboxEmpty({ onAddNewClient, onClose }: ClientComboboxEmptyProps) {
-  if (!onAddNewClient) {
-    return (
-      <CommandEmpty className="py-3 text-center text-sm">
-        <div className="py-2">Nenhum cliente encontrado</div>
-      </CommandEmpty>
-    );
+export function ClientComboboxEmpty({ 
+  onAddNewClient, 
+  onClose,
+  show = false 
+}: ClientComboboxEmptyProps) {
+  if (!show) {
+    return null;
   }
 
+  const handleAddNewClient = () => {
+    if (onAddNewClient) {
+      onAddNewClient();
+      onClose();
+    }
+  };
+
   return (
-    <CommandEmpty className="py-3 text-center text-sm">
-      <div className="py-2">Nenhum cliente encontrado</div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          onClose();
-          onAddNewClient();
-        }}
-        className="mt-1"
-      >
-        <UserPlus className="mr-2 h-4 w-4" />
-        Cadastrar novo cliente
-      </Button>
+    <CommandEmpty className="p-4 text-center">
+      <p className="mb-2">Nenhum cliente encontrado</p>
+      {onAddNewClient && (
+        <Button 
+          size="sm" 
+          variant="outline" 
+          onClick={handleAddNewClient}
+          className="flex items-center"
+        >
+          <UserPlus className="h-4 w-4 mr-1" />
+          <span>Adicionar novo cliente</span>
+        </Button>
+      )}
     </CommandEmpty>
   );
 }

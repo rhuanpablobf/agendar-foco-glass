@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,6 +10,10 @@ interface ScheduleListViewProps {
 }
 
 export function ScheduleListView({ filteredAppointments }: ScheduleListViewProps) {
+  // Ensure arrays are valid
+  const safeAppointments = Array.isArray(filteredAppointments) ? filteredAppointments : [];
+  const safeProfessionals = Array.isArray(mockProfessionals) ? mockProfessionals : [];
+
   return (
     <div className="relative overflow-x-auto">
       <table className="w-full text-sm text-left">
@@ -24,7 +29,7 @@ export function ScheduleListView({ filteredAppointments }: ScheduleListViewProps
           </tr>
         </thead>
         <tbody>
-          {filteredAppointments.map(appointment => (
+          {safeAppointments.map(appointment => (
             <tr key={appointment.id} className="border-b border-white/10">
               <td className="px-6 py-4 font-medium whitespace-nowrap">
                 {appointment.clientName}
@@ -33,7 +38,7 @@ export function ScheduleListView({ filteredAppointments }: ScheduleListViewProps
                 {appointment.serviceName}
               </td>
               <td className="px-6 py-4">
-                {mockProfessionals.find(p => p.id === appointment.professionalId)?.name}
+                {safeProfessionals.find(p => p.id === appointment.professionalId)?.name}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {appointment.startTime} - {appointment.endTime}

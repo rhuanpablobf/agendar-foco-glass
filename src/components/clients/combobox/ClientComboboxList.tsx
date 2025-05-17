@@ -30,7 +30,7 @@ export function ClientComboboxList({
     <CommandGroup className="max-h-[300px] overflow-y-auto">
       {safeClients.map((client) => (
         <ClientComboboxItem
-          key={client.id}
+          key={client.id?.toString() || ''}
           client={client}
           selectedClientId={selectedClientId}
           onSelect={onClientSelect}
