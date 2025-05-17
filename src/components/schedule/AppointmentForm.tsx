@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Search, UserPlus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,6 +24,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { 
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from '@/components/ui/command';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
@@ -82,6 +90,12 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   onSubmit,
   onNewClient,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const commandRef = useRef<HTMLDivElement>(null);
+  
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
     defaultValues: {
@@ -95,6 +109,70 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     },
   });
 
+  // Filter clients when search query changes
+  useEffect(() => {
+    if (searchQuery.length >= 2) {
+      const query = searchQuery.toLowerCase();
+      const filtered = clients.filter((client) => 
+        client.name.toLowerCase().includes(query) || 
+        client.email.toLowerCase().includes(query) ||
+        client.phone.toLowerCase().includes(query)
+      );
+      setFilteredClients(filtered);
+      setIsSearchOpen(true);
+      setSelectedIndex(-1);
+    } else {
+      setFilteredClients([]);
+    }
+  }, [searchQuery, clients]);
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isSearchOpen) return;
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < filteredClients.length - 1 ? prev + 1 : filteredClients.length - 1
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : 0);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < filteredClients.length) {
+          selectClient(filteredClients[selectedIndex].id.toString());
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsSearchOpen(false);
+        break;
+      default:
+        break;
+    }
+  };
+  
+  // Handle client selection
+  const selectClient = (clientId: string) => {
+    form.setValue('client', clientId);
+    const client = clients.find(c => c.id.toString() === clientId);
+    if (client) {
+      setSearchQuery(client.name);
+    }
+    setIsSearchOpen(false);
+  };
+  
+  // Clear search query
+  const clearSearch = () => {
+    setSearchQuery('');
+    form.setValue('client', '');
+  };
+
+  // Handle form submission
   const handleSubmit = (values: AppointmentFormValues) => {
     // Combine date and time
     const [hours, minutes] = values.time.split(":").map(Number);
@@ -130,6 +208,15 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   };
 
   const timeSlots = generateTimeSlots();
+  
+  // Get selected client name
+  const getSelectedClientName = () => {
+    const clientId = form.watch('client');
+    if (!clientId) return '';
+    
+    const client = clients.find(c => c.id.toString() === clientId);
+    return client ? client.name : '';
+  };
 
   return (
     <DialogContent className="sm:max-w-[600px]">
@@ -139,33 +226,80 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Client selection */}
+          <div className="grid grid-cols-1 gap-4">
+            {/* Client search and autocomplete */}
             <FormField
               control={form.control}
               name="client"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Cliente</FormLabel>
-                  <div className="flex gap-2">
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione o cliente" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.id.toString()}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button type="button" variant="outline" onClick={onNewClient} className="whitespace-nowrap">
-                      Novo Cliente
-                    </Button>
+                  <div className="relative">
+                    <div className="relative w-full">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar cliente por nome, email ou telefone..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onClick={() => searchQuery.length >= 2 && setIsSearchOpen(true)}
+                        className="pl-10 pr-10"
+                      />
+                      {searchQuery && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="absolute right-1 top-1 h-8 w-8 p-0"
+                          onClick={clearSearch}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {isSearchOpen && (
+                      <div
+                        ref={commandRef}
+                        onKeyDown={handleKeyDown}
+                        className="absolute top-full left-0 z-50 w-full mt-1 rounded-md border bg-popover shadow-md"
+                      >
+                        <Command className="rounded-lg border shadow-md">
+                          <CommandList>
+                            {filteredClients.length > 0 ? (
+                              <CommandGroup>
+                                {filteredClients.map((client, index) => (
+                                  <CommandItem
+                                    key={client.id}
+                                    className={cn(
+                                      "flex flex-col items-start p-2",
+                                      selectedIndex === index ? "bg-accent text-accent-foreground" : ""
+                                    )}
+                                    onSelect={() => selectClient(client.id.toString())}
+                                  >
+                                    <div className="font-medium">{client.name}</div>
+                                    <div className="text-sm text-muted-foreground flex flex-wrap gap-2">
+                                      <span>{client.phone}</span>
+                                      {client.email && <span>• {client.email}</span>}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            ) : (
+                              <CommandEmpty className="py-6 px-2">
+                                <div className="text-center space-y-4">
+                                  <p>Nenhum cliente encontrado com "{searchQuery}"</p>
+                                  <Button type="button" onClick={onNewClient}>
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    Criar novo cliente
+                                  </Button>
+                                </div>
+                              </CommandEmpty>
+                            )}
+                          </CommandList>
+                        </Command>
+                      </div>
+                    )}
                   </div>
+                  <input type="hidden" {...field} />
                   <FormMessage />
                 </FormItem>
               )}
