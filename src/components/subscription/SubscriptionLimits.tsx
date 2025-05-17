@@ -3,10 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useSubscription } from '@/hooks/useSubscription';
+import { UpgradeModal } from './UpgradeModal';
 
 interface SubscriptionLimitsProps {
   variant?: 'full' | 'compact';
@@ -17,7 +18,13 @@ export const SubscriptionLimits: React.FC<SubscriptionLimitsProps> = ({
   variant = 'full',
   showUpgradeButton = true
 }) => {
-  const { subscriptionStatus, isLoading, upgradeToProfessional } = useSubscription();
+  const { 
+    subscriptionStatus, 
+    isLoading, 
+    isProcessingPayment,
+    manageSubscription,
+    refreshSubscriptionStatus
+  } = useSubscription();
 
   if (isLoading) {
     return (
@@ -42,6 +49,7 @@ export const SubscriptionLimits: React.FC<SubscriptionLimitsProps> = ({
     format(new Date(nextResetDate), "'dia' dd 'de' MMMM", { locale: ptBR }) : '';
 
   const limitReached = isLimitReached && plan === 'Gratuito';
+  const isProfessionalPlan = plan === 'Profissional';
 
   return (
     <Card className={`border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass ${limitReached ? 'border-amber-300/30' : ''}`}>
@@ -60,6 +68,11 @@ export const SubscriptionLimits: React.FC<SubscriptionLimitsProps> = ({
           {limitReached && (
             <div className="bg-amber-500/20 text-amber-200 text-xs px-2 py-1 rounded-full border border-amber-300/30">
               Limite atingido
+            </div>
+          )}
+          {isProfessionalPlan && (
+            <div className="bg-green-500/20 text-green-200 text-xs px-2 py-1 rounded-full border border-green-300/30">
+              Plano ativo
             </div>
           )}
         </div>
@@ -86,15 +99,40 @@ export const SubscriptionLimits: React.FC<SubscriptionLimitsProps> = ({
           </div>
         )}
 
-        {showUpgradeButton && plan === 'Gratuito' && (
-          <Button 
-            className="w-full" 
-            onClick={upgradeToProfessional}
-          >
-            {variant === 'compact' ? 'Atualizar Plano' : 'Atualizar para o Plano Profissional'}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {isProfessionalPlan && variant === 'full' && (
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={manageSubscription}
+              disabled={isProcessingPayment}
+            >
+              {isProcessingPayment ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                'Gerenciar assinatura'
+              )}
+            </Button>
+          )}
+
+          {showUpgradeButton && plan === 'Gratuito' && (
+            <UpgradeModal 
+              trigger={
+                <Button 
+                  className="w-full" 
+                  disabled={isProcessingPayment}
+                >
+                  {variant === 'compact' ? 'Atualizar Plano' : 'Atualizar para o Plano Profissional'}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              }
+              onUpgrade={refreshSubscriptionStatus}
+            />
+          )}
+        </div>
       </CardContent>
     </Card>
   );

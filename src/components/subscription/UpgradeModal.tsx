@@ -7,32 +7,46 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Clock, Users, PieChart, DollarSign } from 'lucide-react';
+import { Clock, Users, PieChart, DollarSign, Loader2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 
 interface UpgradeModalProps {
   trigger: React.ReactNode;
   onUpgrade?: () => void;
+  onClose?: () => void;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({ 
   trigger,
-  onUpgrade
+  onUpgrade,
+  onClose
 }) => {
-  const { upgradeToProfessional, planDetails } = useSubscription();
+  const { upgradeToProfessional, planDetails, isProcessingPayment, subscriptionStatus } = useSubscription();
+  const [open, setOpen] = React.useState(false);
 
-  const handleUpgrade = () => {
-    upgradeToProfessional();
+  const handleUpgrade = async () => {
+    await upgradeToProfessional();
     if (onUpgrade) {
       onUpgrade();
     }
+    setOpen(false);
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen && onClose) {
+      onClose();
+    }
+  };
+
+  const isAlreadyPro = subscriptionStatus?.plan === 'Profissional';
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
@@ -62,7 +76,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 </li>
               </ul>
               <div className="mt-4 text-lg font-bold">Grátis</div>
-              <div className="text-xs text-muted-foreground">Seu plano atual</div>
+              <div className="text-xs text-muted-foreground">
+                {subscriptionStatus?.plan === 'Gratuito' ? 'Seu plano atual' : ''}
+              </div>
             </Card>
             
             <Card className="bg-primary/10 border border-primary/30 p-4">
@@ -94,18 +110,39 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 </li>
               </ul>
               <div className="mt-4 text-lg font-bold">R${planDetails.Profissional.price.toFixed(2)}<span className="text-xs font-normal">/mês</span></div>
+              <div className="text-xs text-muted-foreground">
+                {subscriptionStatus?.plan === 'Profissional' ? 'Seu plano atual' : ''}
+              </div>
             </Card>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" className="w-auto">
-            Ver detalhes
+        <DialogFooter className="flex justify-between items-center gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancelar
           </Button>
-          <Button className="w-auto" onClick={handleUpgrade}>
-            Assinar plano profissional
-          </Button>
-        </div>
+          
+          {isAlreadyPro ? (
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Você já possui o plano profissional
+            </Button>
+          ) : (
+            <Button 
+              className="w-auto" 
+              onClick={handleUpgrade} 
+              disabled={isProcessingPayment}
+            >
+              {isProcessingPayment ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                'Assinar plano profissional'
+              )}
+            </Button>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
