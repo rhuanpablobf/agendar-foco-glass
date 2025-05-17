@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -227,10 +226,18 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     return client ? client.name : '';
   };
 
-  // Handle new client button click
-  const handleNewClientClick = () => {
-    onNewClient();
-    setIsSearchOpen(false);
+  // Handle new client button click with preventing default and stopping propagation
+  const handleNewClientClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Call the onNewClient function to open the modal
+    if (onNewClient) {
+      onNewClient();
+    }
+    
+    // Keep the search open state as is to avoid UI flicker
+    // We'll let the modal or navigation handle closing this if needed
   };
 
   return (
