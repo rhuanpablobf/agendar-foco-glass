@@ -23,7 +23,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionLimits } from '@/components/subscription/SubscriptionLimits';
 
 interface SidebarProps {
-  userType: 'company' | 'professional' | 'client';
+  userType: 'company' | 'professional' | 'client' | 'admin';
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
 }
@@ -65,12 +65,22 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
     { name: 'Histórico', href: '/client/history', icon: FileText },
     { name: 'Configurações', href: '/client/settings', icon: Settings },
   ];
+  
+  const adminLinks: NavLink[] = [
+    { name: 'Dashboard', href: '/admin', icon: Home },
+    { name: 'Empresas', href: '/admin/companies', icon: Users },
+    { name: 'Planos', href: '/admin/plans', icon: Package },
+    { name: 'Subadmins', href: '/admin/subadmins', icon: User },
+    { name: 'Configurações', href: '/admin/settings', icon: Settings },
+  ];
 
   const links = userType === 'company' 
     ? companyLinks 
     : userType === 'professional' 
       ? professionalLinks 
-      : clientLinks;
+      : userType === 'admin'
+        ? adminLinks
+        : clientLinks;
 
   return (
     <>
@@ -100,7 +110,12 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
         <div className="flex flex-col h-full">
           {/* Logo and company name */}
           <div className="p-6 border-b">
-            <Link to={userType === 'company' ? '/dashboard' : userType === 'professional' ? '/professional' : '/client'} className="flex items-center gap-3">
+            <Link to={
+              userType === 'company' ? '/dashboard' : 
+              userType === 'professional' ? '/professional' : 
+              userType === 'admin' ? '/admin' :
+              '/client'
+            } className="flex items-center gap-3">
               <div className="bg-primary/20 p-2 rounded-md">
                 <Calendar className="h-6 w-6 text-primary" />
               </div>
@@ -109,6 +124,7 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
                 <p className="text-xs text-muted-foreground">
                   {userType === 'company' ? 'Painel da Empresa' : 
                    userType === 'professional' ? 'Painel do Profissional' : 
+                   userType === 'admin' ? 'Painel do Admin' :
                    'Painel do Cliente'}
                 </p>
               </div>
@@ -119,8 +135,8 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
           <div className="flex-1 overflow-auto py-6 px-4">
             <nav className="space-y-1">
               {links.map((link) => {
-                // Skip pro features if not on professional plan
-                if (link.requiresPro && !isProfessionalPlan) {
+                // Skip pro features if not on professional plan and not admin
+                if (link.requiresPro && userType === 'company' && !isProfessionalPlan) {
                   return null;
                 }
                 
@@ -141,7 +157,7 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
                     <Icon className="h-4 w-4" />
                     <span>{link.name}</span>
                     
-                    {link.requiresPro && (
+                    {link.requiresPro && userType === 'company' && (
                       <span className="ml-auto text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
                         PRO
                       </span>
@@ -165,18 +181,23 @@ export function Sidebar({ userType, isMobileOpen, setIsMobileOpen }: SidebarProp
               <Avatar>
                 <AvatarImage src="/avatar.png" />
                 <AvatarFallback>
-                  {userType === 'company' ? 'CO' : userType === 'professional' ? 'PR' : 'CL'}
+                  {userType === 'company' ? 'CO' : 
+                   userType === 'professional' ? 'PR' : 
+                   userType === 'admin' ? 'AD' :
+                   'CL'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {userType === 'company' ? 'Empresa Demo' : 
                    userType === 'professional' ? 'João Profissional' : 
+                   userType === 'admin' ? 'Admin Principal' :
                    'Maria Cliente'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {userType === 'company' ? 'admin@empresa.com' : 
                    userType === 'professional' ? 'joao@email.com' : 
+                   userType === 'admin' ? 'admin@beautysalon.com' :
                    'maria@email.com'}
                 </p>
               </div>
