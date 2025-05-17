@@ -34,7 +34,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
           <SelectValue placeholder="Profissional" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todos os profissionais</SelectItem>
+          <SelectItem value="all">Todos os profissionais</SelectItem>
           {professionals.map(professional => (
             <SelectItem key={professional.id} value={professional.id.toString()}>
               {professional.name}
@@ -48,7 +48,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todos</SelectItem>
+          <SelectItem value="all">Todos</SelectItem>
           <SelectItem value="confirmed">Confirmados</SelectItem>
           <SelectItem value="pending">Pendentes</SelectItem>
           <SelectItem value="cancelled">Cancelados</SelectItem>

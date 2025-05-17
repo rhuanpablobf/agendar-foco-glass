@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -44,8 +43,12 @@ const Schedule = () => {
   // Filtered appointments based on filters
   const filteredAppointments = mockAppointments.filter(appointment => {
     const matchDate = isSameDay(appointment.date, selectedDate);
-    const matchProfessional = selectedProfessional ? Number(selectedProfessional) === appointment.professionalId : true;
-    const matchStatus = selectedStatus ? selectedStatus === appointment.status : true;
+    const matchProfessional = !selectedProfessional || selectedProfessional === "all" 
+      ? true 
+      : Number(selectedProfessional) === appointment.professionalId;
+    const matchStatus = !selectedStatus || selectedStatus === "all" 
+      ? true 
+      : selectedStatus === appointment.status;
 
     return matchDate && matchProfessional && matchStatus;
   });
