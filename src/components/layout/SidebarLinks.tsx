@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -9,7 +10,8 @@ import {
   Settings,
   Users,
   User,
-  Package
+  Package,
+  FileText
 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePermission } from '@/hooks/usePermission';
