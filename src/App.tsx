@@ -35,6 +35,16 @@ const App = () => (
           
           {/* Rotas de empresa */}
           <Route path="/dashboard" element={<CompanyDashboard />} />
+          <Route path="/dashboard/schedule" element={<Schedule />} />
+          <Route path="/dashboard/professionals" element={<Team />} />
+          <Route path="/dashboard/services" element={<Services />} />
+          <Route path="/dashboard/clients" element={<Clients />} />
+          <Route path="/dashboard/financial" element={<Financial />} />
+          <Route path="/dashboard/reports" element={<Reports />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/dashboard/subscription" element={<CompanyDashboard />} />
+          
+          {/* Rotas alternativas para manter compatibilidade */}
           <Route path="/agenda" element={<Schedule />} />
           <Route path="/equipe" element={<Team />} />
           <Route path="/servicos" element={<Services />} />
@@ -44,10 +54,11 @@ const App = () => (
           <Route path="/configuracoes" element={<Settings />} />
           
           {/* Rotas de admin */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/empresas" element={<AdminDashboard />} />
-          <Route path="/admin/planos" element={<AdminDashboard />} />
-          <Route path="/admin/configuracoes" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/companies" element={<AdminDashboard />} />
+          <Route path="/admin/plans" element={<AdminDashboard />} />
+          <Route path="/admin/subadmins" element={<AdminDashboard />} />
+          <Route path="/admin/settings" element={<AdminDashboard />} />
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />
