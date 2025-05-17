@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
@@ -17,8 +17,42 @@ import Clients from "./pages/dashboard/Clients";
 import Financial from "./pages/dashboard/Financial";
 import Reports from "./pages/dashboard/Reports";
 import Settings from "./pages/dashboard/Settings";
+import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient();
+
+// Componente para redirecionar com base no perfil de usuário
+const ProfileRedirect = () => {
+  // Simulação de verificação de perfil - em produção, use um hook/contexto de autenticação
+  const [userRole, setUserRole] = useState<'admin' | 'company' | null>(null);
+  
+  useEffect(() => {
+    // Simulação de verificação de usuário logado
+    const checkUserRole = () => {
+      // Em produção, isso seria baseado no login real
+      // Aqui estamos apenas simulando baseado na última rota visitada
+      const lastPath = localStorage.getItem('lastPath') || '';
+      
+      if (lastPath.includes('admin')) {
+        setUserRole('admin');
+      } else if (lastPath.includes('dashboard')) {
+        setUserRole('company');
+      } else {
+        // Valor padrão para demonstração
+        setUserRole('company');
+      }
+    };
+    
+    checkUserRole();
+  }, []);
+  
+  if (!userRole) return null; // Renderizar um loading state enquanto verifica
+  
+  if (userRole === 'admin') return <Navigate to="/admin" replace />;
+  if (userRole === 'company') return <Navigate to="/dashboard" replace />;
+  
+  return <Navigate to="/auth/login" replace />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -27,38 +61,48 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Rota inicial pública */}
           <Route path="/" element={<Index />} />
           
           {/* Rotas de autenticação */}
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/registrar" element={<Register />} />
+          <Route path="/auth">
+            <Route path="login" element={<Login />} />
+            <Route path="registrar" element={<Register />} />
+          </Route>
           
-          {/* Rotas de empresa */}
-          <Route path="/dashboard" element={<CompanyDashboard />} />
-          <Route path="/dashboard/schedule" element={<Schedule />} />
-          <Route path="/dashboard/professionals" element={<Team />} />
-          <Route path="/dashboard/services" element={<Services />} />
-          <Route path="/dashboard/clients" element={<Clients />} />
-          <Route path="/dashboard/financial" element={<Financial />} />
-          <Route path="/dashboard/reports" element={<Reports />} />
-          <Route path="/dashboard/settings" element={<Settings />} />
-          <Route path="/dashboard/subscription" element={<CompanyDashboard />} />
+          {/* Redirecionamento após login baseado no perfil */}
+          <Route path="/profile" element={<ProfileRedirect />} />
           
-          {/* Rotas alternativas para manter compatibilidade */}
-          <Route path="/agenda" element={<Schedule />} />
-          <Route path="/equipe" element={<Team />} />
-          <Route path="/servicos" element={<Services />} />
-          <Route path="/clientes" element={<Clients />} />
-          <Route path="/financeiro" element={<Financial />} />
-          <Route path="/relatorios" element={<Reports />} />
-          <Route path="/configuracoes" element={<Settings />} />
+          {/* Rotas de empresa (dashboard) */}
+          <Route path="/dashboard">
+            <Route index element={<CompanyDashboard />} />
+            <Route path="schedule" element={<Schedule />} />
+            <Route path="professionals" element={<Team />} />
+            <Route path="services" element={<Services />} />
+            <Route path="clients" element={<Clients />} />
+            <Route path="financial" element={<Financial />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="subscription" element={<CompanyDashboard />} />
+          </Route>
           
-          {/* Rotas de admin */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/companies" element={<AdminDashboard />} />
-          <Route path="/admin/plans" element={<AdminDashboard />} />
-          <Route path="/admin/subadmins" element={<AdminDashboard />} />
-          <Route path="/admin/settings" element={<AdminDashboard />} />
+          {/* Rotas de administrador */}
+          <Route path="/admin">
+            <Route index element={<AdminDashboard />} />
+            <Route path="companies" element={<AdminDashboard />} />
+            <Route path="plans" element={<AdminDashboard />} />
+            <Route path="subadmins" element={<AdminDashboard />} />
+            <Route path="settings" element={<AdminDashboard />} />
+          </Route>
+          
+          {/* Redirecionamentos para manter compatibilidade temporária */}
+          <Route path="/agenda" element={<Navigate to="/dashboard/schedule" replace />} />
+          <Route path="/equipe" element={<Navigate to="/dashboard/professionals" replace />} />
+          <Route path="/servicos" element={<Navigate to="/dashboard/services" replace />} />
+          <Route path="/clientes" element={<Navigate to="/dashboard/clients" replace />} />
+          <Route path="/financeiro" element={<Navigate to="/dashboard/financial" replace />} />
+          <Route path="/relatorios" element={<Navigate to="/dashboard/reports" replace />} />
+          <Route path="/configuracoes" element={<Navigate to="/dashboard/settings" replace />} />
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />

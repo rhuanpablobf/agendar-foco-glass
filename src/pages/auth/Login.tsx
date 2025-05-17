@@ -31,10 +31,13 @@ const Login = () => {
       setLoading(false);
       toast.success("Login realizado com sucesso!");
       
+      // Armazenar tipo de usuário para redirecionamento baseado em perfil
+      localStorage.setItem('lastPath', userType === 'company' ? '/dashboard' : '/admin');
+      
       if (userType === 'company') {
         navigate('/dashboard');
       } else {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       }
     }, 1500);
   };
