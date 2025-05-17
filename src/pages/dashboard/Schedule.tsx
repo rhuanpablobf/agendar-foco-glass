@@ -21,6 +21,8 @@ import { ScheduleFilters } from '@/components/schedule/ScheduleFilters';
 import { ScheduleCalendarView } from '@/components/schedule/ScheduleCalendarView';
 import { ScheduleListView } from '@/components/schedule/ScheduleListView';
 import { PlanLimitAlert } from '@/components/schedule/PlanLimitAlert';
+import { ClientFormModal } from '@/components/clients/ClientFormModal';
+import { ClientFormData } from '@/types/client';
 
 // Import mock data
 import { mockAppointments, mockProfessionals, mockClients, mockServices } from '@/components/schedule/mockData';
@@ -69,6 +71,15 @@ const Schedule = () => {
     
     // Close the dialog
     setShowNewAppointmentDialog(false);
+  };
+
+  // Handle client creation
+  const handleCreateClient = (clientData: ClientFormData) => {
+    console.log("Novo cliente criado:", clientData);
+    // Aqui você adicionaria o cliente ao banco de dados/estado
+    
+    // Fechar o modal de cliente
+    setShowNewClientModal(false);
   };
 
   // Effect to check subscription status on mount
@@ -191,6 +202,13 @@ const Schedule = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Modal para criação de novo cliente */}
+      <ClientFormModal
+        isOpen={showNewClientModal}
+        onClose={() => setShowNewClientModal(false)}
+        onSubmit={handleCreateClient}
+      />
     </MainLayout>
   );
 };
