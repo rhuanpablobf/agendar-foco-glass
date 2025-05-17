@@ -50,7 +50,7 @@ export function useClientSearch(clients: ClientOption[] = []) {
     searchValue,
     setSearchValue,
     isLoading,
-    filteredClients,
-    safeClients
+    filteredClients: Array.isArray(filteredClients) ? filteredClients : [],
+    safeClients: Array.isArray(clients) ? clients : []
   };
 }
