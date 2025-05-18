@@ -54,65 +54,84 @@ export const registerUser = async (data: RegistrationData) => {
   console.log('Usuário criado com ID:', authData.user.id);
   
   // Pequeno atraso para garantir que o trigger handle_new_user() tenha tempo de executar
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise(resolve => setTimeout(resolve, 1000));
   
-  // 2. Criar uma empresa para o usuário
-  const { data: companyData, error: companyError } = await supabase
-    .from('companies')
-    .insert([{ name: data.companyName }])
-    .select('id')
-    .single();
+  try {
+    // 2. Criar uma empresa para o usuário
+    const { data: companyData, error: companyError } = await supabase
+      .from('companies')
+      .insert([{ name: data.companyName }])
+      .select('id')
+      .single();
 
-  if (companyError) {
-    console.error('Erro na criação da empresa:', companyError);
-    throw new Error(`Erro na criação da empresa: ${companyError.message}`);
-  }
-  
-  console.log('Empresa criada com ID:', companyData.id);
-  
-  // 3. Atualizar o perfil do usuário com o company_id
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .update({ company_id: companyData.id })
-    .eq('id', authData.user.id);
-
-  if (profileError) {
-    console.error('Erro na atualização do perfil:', profileError);
-    throw new Error(`Erro na atualização do perfil: ${profileError.message}`);
-  }
-  
-  console.log('Perfil atualizado com company_id:', companyData.id);
-  
-  // 4. Buscar o plano gratuito e criar uma assinatura
-  const { data: freePlan, error: planError } = await supabase
-    .from('plans')
-    .select('id')
-    .eq('name', 'Gratuito')
-    .single();
-    
-  if (planError) {
-    console.error('Erro ao buscar plano gratuito:', planError);
-    throw new Error(`Erro ao buscar plano gratuito: ${planError.message}`);
-  }
-  
-  if (freePlan) {
-    console.log('Plano gratuito encontrado com ID:', freePlan.id);
-    
-    const { error: subscriptionError } = await supabase
-      .from('subscriptions')
-      .insert([{ 
-        company_id: companyData.id,
-        plan_id: freePlan.id,
-        is_active: true,
-        next_reset_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      }]);
-      
-    if (subscriptionError) {
-      console.error('Erro na criação da assinatura:', subscriptionError);
-      throw new Error(`Erro na criação da assinatura: ${subscriptionError.message}`);
+    if (companyError) {
+      console.error('Erro na criação da empresa:', companyError);
+      throw new Error(`Erro na criação da empresa: ${companyError.message}`);
     }
     
-    console.log('Assinatura criada com sucesso');
+    console.log('Empresa criada com ID:', companyData.id);
+    
+    // 3. Atualizar o perfil do usuário com o company_id
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ company_id: companyData.id })
+      .eq('id', authData.user.id);
+
+    if (profileError) {
+      console.error('Erro na atualização do perfil:', profileError);
+      throw new Error(`Erro na atualização do perfil: ${profileError.message}`);
+    }
+    
+    console.log('Perfil atualizado com company_id:', companyData.id);
+    
+    // 4. Buscar o plano gratuito e criar uma assinatura
+    const { data: freePlan, error: planError } = await supabase
+      .from('plans')
+      .select('id')
+      .eq('name', 'Gratuito')
+      .single();
+      
+    if (planError) {
+      console.error('Erro ao buscar plano gratuito:', planError);
+      throw new Error(`Erro ao buscar plano gratuito: ${planError.message}`);
+    }
+    
+    if (freePlan) {
+      console.log('Plano gratuito encontrado com ID:', freePlan.id);
+      
+      const { error: subscriptionError } = await supabase
+        .from('subscriptions')
+        .insert([{ 
+          company_id: companyData.id,
+          plan_id: freePlan.id,
+          is_active: true,
+          next_reset_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }]);
+        
+      if (subscriptionError) {
+        console.error('Erro na criação da assinatura:', subscriptionError);
+        throw new Error(`Erro na criação da assinatura: ${subscriptionError.message}`);
+      }
+      
+      console.log('Assinatura criada com sucesso');
+    }
+    
+    // 5. Criar configurações padrão para a empresa
+    const { error: settingsError } = await supabase
+      .from('company_settings')
+      .insert([{ company_id: companyData.id }]);
+      
+    if (settingsError) {
+      console.error('Erro na criação das configurações da empresa:', settingsError);
+      // Não lançamos erro aqui pois isso não é crítico para o registro
+    } else {
+      console.log('Configurações da empresa criadas com sucesso');
+    }
+    
+  } catch (error) {
+    console.error('Erro ao configurar dados da empresa:', error);
+    // Não propagar erro aqui para permitir que o usuário faça login
+    // mesmo que a configuração da empresa falhe
   }
   
   return authData.user;

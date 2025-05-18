@@ -40,6 +40,15 @@ export const RegisterForm = ({ onSuccess, redirectTo = '/auth/login' }: Register
     try {
       setLoading(true);
       
+      // Clear any existing auth state
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (error) {
+        console.log('Erro ao fazer logout prévio, continuando mesmo assim:', error);
+      }
+      
+      console.log('Iniciando registro do usuário:', data.email);
+      
       await registerUser({
         firstName: data.firstName,
         lastName: data.lastName,
