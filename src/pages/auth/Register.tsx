@@ -62,6 +62,7 @@ const Register = () => {
       setLoading(true);
       
       // Limpar estado de autenticação para evitar problemas
+      console.log('Limpando estado de autenticação existente');
       cleanupAuthState();
       
       // Tentar logout global primeiro para garantir um estado limpo

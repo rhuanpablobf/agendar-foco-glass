@@ -33,6 +33,7 @@ export function useAuthStatus() {
     // Configurar o listener de estado de autenticação PRIMEIRO
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, !!session);
         // Apenas atualizações de estado síncronas aqui
         setIsAuthenticated(!!session?.user);
         setUser(session?.user || null);
@@ -41,6 +42,7 @@ export function useAuthStatus() {
         // Adiar chamadas do Supabase com setTimeout
         if (event === 'SIGNED_OUT') {
           setTimeout(() => {
+            console.log('Redirecionando para login após logout');
             navigate('/auth/login');
           }, 0);
         }
@@ -50,7 +52,9 @@ export function useAuthStatus() {
     // DEPOIS verificar sessão existente
     const checkAuth = async () => {
       try {
+        console.log('Verificando autenticação existente');
         const { data: { user } } = await supabase.auth.getUser();
+        console.log('Usuário atual:', !!user);
         setIsAuthenticated(!!user);
         setUser(user);
       } catch (error) {
@@ -74,6 +78,7 @@ export function useAuthStatus() {
       setIsAuthenticated(isAuth);
       
       if (!isAuth) {
+        console.log('Usuário não autenticado, redirecionando para login');
         navigate('/auth/login');
       }
       
@@ -87,11 +92,14 @@ export function useAuthStatus() {
 
   const logout = async () => {
     try {
+      console.log('Iniciando processo de logout');
+      
       // Limpar estado de autenticação
       cleanupAuthState();
       
       // Tentar logout global (fallback se falhar)
       try {
+        console.log('Executando logout global');
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
         // Ignorar erros
@@ -99,6 +107,7 @@ export function useAuthStatus() {
       }
       
       // Forçar recarga da página para um estado limpo
+      console.log('Redirecionando para tela de login');
       window.location.href = '/auth/login';
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
