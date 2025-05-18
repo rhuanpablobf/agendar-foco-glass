@@ -11,7 +11,7 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children, userType }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -48,14 +48,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, userType }) =>
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar 
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
-        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={() => setIsMobileOpen(!isMobileOpen)} 
+        isSidebarOpen={isMobileOpen}
         userName={userName || 'Usuário'}
         onLogout={handleLogout}
       />
       <div className="flex flex-1 h-[calc(100vh-64px)]">
-        <Sidebar isOpen={isSidebarOpen} userType={userType} />
-        <main className={`flex-1 p-6 transition-all duration-300 overflow-auto ${isSidebarOpen ? 'lg:ml-64' : ''}`}>
+        <Sidebar 
+          userType={userType}
+          isMobileOpen={isMobileOpen}
+          setIsMobileOpen={setIsMobileOpen}
+        />
+        <main className={`flex-1 p-6 transition-all duration-300 overflow-auto ${isMobileOpen ? 'lg:ml-64' : ''}`}>
           {children}
         </main>
       </div>

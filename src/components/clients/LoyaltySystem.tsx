@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -60,7 +59,7 @@ export const LoyaltySystem: React.FC<LoyaltySystemProps> = ({ client, serviceHis
             
             <div className="bg-white/5 p-4 rounded-md">
               <div className="text-sm text-muted-foreground mb-1">Total Gasto</div>
-              <div className="text-2xl font-bold">R$ {loyalty.totalSpent.toFixed(2)}</div>
+              <div className="text-2xl font-bold">R$ {loyalty.total_spent.toFixed(2)}</div>
             </div>
           </div>
           
@@ -106,10 +105,10 @@ export const LoyaltySystem: React.FC<LoyaltySystemProps> = ({ client, serviceHis
           
           <div className="flex justify-between items-center">
             <div>
-              {loyalty.lastVisit && (
+              {loyalty.last_visit && (
                 <div className="flex items-center text-xs text-muted-foreground gap-1">
                   <Calendar className="h-3 w-3" />
-                  Última visita: {format(new Date(loyalty.lastVisit), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  Última visita: {format(new Date(loyalty.last_visit), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </div>
               )}
             </div>

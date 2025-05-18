@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Client, ClientFormData } from "@/types/client";
 import { toast } from "sonner";
@@ -123,7 +122,7 @@ export const updateClient = async (clientId: string, clientData: Partial<ClientF
         phone: clientData.phone,
         notes: clientData.notes || null,
         communication_preference: clientData.preferences?.communicationPreference || null,
-        updated_at: new Date()
+        updated_at: new Date().toISOString()
       })
       .eq('id', clientId)
       .select()
@@ -145,7 +144,10 @@ export const updateClientNotes = async (clientId: string, notes: string): Promis
   try {
     const { error } = await supabase
       .from('clients')
-      .update({ notes, updated_at: new Date() })
+      .update({ 
+        notes, 
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', clientId);
       
     if (error) throw error;
@@ -234,7 +236,7 @@ export const addLoyaltyPoints = async (clientId: string, points: number): Promis
         .from('client_loyalty')
         .update({ 
           points: loyaltyData.points + points,
-          updated_at: new Date()
+          updated_at: new Date().toISOString()
         })
         .eq('client_id', clientId);
         
@@ -285,7 +287,7 @@ export const addLoyaltyStamp = async (clientId: string): Promise<boolean> => {
         .from('client_loyalty')
         .update({ 
           stamps: loyaltyData.stamps + 1,
-          updated_at: new Date()
+          updated_at: new Date().toISOString()
         })
         .eq('client_id', clientId);
         

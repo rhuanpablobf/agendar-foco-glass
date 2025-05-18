@@ -212,7 +212,7 @@ export const ClientDetails = ({
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total gasto:</span>
-                  <span>R$ {client.loyalty?.totalSpent?.toFixed(2) || '0.00'}</span>
+                  <span>R$ {client.loyalty?.total_spent?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Visitas:</span>
@@ -221,8 +221,8 @@ export const ClientDetails = ({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Última visita:</span>
                   <span>
-                    {client.loyalty?.lastVisit
-                      ? format(client.loyalty.lastVisit, "dd/MM/yyyy")
+                    {client.loyalty?.last_visit
+                      ? format(client.loyalty.last_visit, "dd/MM/yyyy")
                       : 'N/A'}
                   </span>
                 </div>

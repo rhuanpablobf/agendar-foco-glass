@@ -22,10 +22,10 @@ export interface Client {
 export interface LoyaltyData {
   client_id?: string;
   points: number;
-  total_spent: number;
+  total_spent: number;  // Consistent with DB column name
   visits: number;
   stamps: number;
-  last_visit?: string | Date | null;
+  last_visit?: string | null;  // Consistent with DB column name
   created_at?: string;
   updated_at?: string;
 }
