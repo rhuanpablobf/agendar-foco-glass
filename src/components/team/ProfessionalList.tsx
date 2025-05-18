@@ -20,12 +20,14 @@ interface ProfessionalListProps {
   professionals: Professional[];
   onEdit: (professional: Professional) => void;
   onDelete: (id: string) => void;
+  onSelect?: (id: string) => void;
 }
 
 export const ProfessionalList: React.FC<ProfessionalListProps> = ({ 
   professionals, 
   onEdit, 
-  onDelete 
+  onDelete,
+  onSelect
 }) => {
   const getInitials = (name: string) => {
     return name
@@ -36,10 +38,20 @@ export const ProfessionalList: React.FC<ProfessionalListProps> = ({
       .substring(0, 2);
   };
 
+  const handleCardClick = (professional: Professional) => {
+    if (onSelect) {
+      onSelect(professional.id);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {professionals.map((professional) => (
-        <Card key={professional.id} className="relative overflow-hidden hover:shadow-md transition-all bg-white/5 backdrop-blur-sm border border-white/10">
+        <Card 
+          key={professional.id} 
+          className="relative overflow-hidden hover:shadow-md transition-all bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer"
+          onClick={() => handleCardClick(professional)}
+        >
           <CardContent className="p-6">
             <div className="flex flex-col items-center text-center mb-4">
               <Avatar className="h-24 w-24 mb-4">
@@ -60,14 +72,20 @@ export const ProfessionalList: React.FC<ProfessionalListProps> = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => onEdit(professional)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(professional);
+                }}
               >
                 <Pencil className="h-4 w-4 mr-1" /> Editar
               </Button>
               <Button 
                 variant="destructive" 
                 size="sm" 
-                onClick={() => onDelete(professional.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(professional.id);
+                }}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Excluir
               </Button>

@@ -36,11 +36,11 @@ const formSchema = z.object({
 });
 
 interface ServiceFormProps {
-  onSubmit: (data: ServiceFormData) => void;
+  onSubmit?: (data: ServiceFormData) => void;
+  onSave?: (data: ServiceFormData) => void;
   initialData?: Partial<ServiceFormData>;
   availableServices?: Service[];
   isEdit?: boolean;
-  onSave?: (data: ServiceFormData) => void;
 }
 
 export const ServiceForm = ({

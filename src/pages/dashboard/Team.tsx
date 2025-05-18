@@ -165,6 +165,14 @@ const Team = () => {
     return professionals.find(p => p.id === selectedProfessional);
   };
 
+  const handleEditProfessional = (professional: Professional) => {
+    console.log("Editing professional:", professional);
+  };
+
+  const handleDeleteProfessional = (id: string) => {
+    console.log("Deleting professional with ID:", id);
+  };
+
   return (
     <MainLayout userType="company">
       <div className="space-y-6">
@@ -191,15 +199,15 @@ const Team = () => {
             <ProfessionalList
               professionals={professionals}
               onSelect={handleSelectProfessional}
-              onEdit={() => {}}
-              onDelete={() => {}}
+              onEdit={handleEditProfessional}
+              onDelete={handleDeleteProfessional}
             />
           </TabsContent>
 
           <TabsContent value="create">
             <ProfessionalForm 
               professional={null} 
-              services={mockServices} 
+              services={mockServices}
               onSave={handleSaveProfessional} 
               onCancel={handleCancelForm} 
             />

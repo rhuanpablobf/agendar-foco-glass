@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ClientList } from '@/components/clients/ClientList';
@@ -212,11 +213,11 @@ const Clients = () => {
     setIsFormOpen(false);
   };
   
-  const handleUpdateNotes = (notes: string) => {
+  const handleUpdateNotes = (clientId: string, notes: string) => {
     if (selectedClient) {
       setClients(prev => 
         prev.map(client => 
-          client.id === selectedClient.id 
+          client.id === clientId 
             ? { ...client, notes } 
             : client
         )
@@ -225,7 +226,7 @@ const Clients = () => {
     }
   };
   
-  const handleAddLoyaltyPoints = (points: number) => {
+  const handleAddLoyaltyPoints = (clientId: string, points: number) => {
     if (selectedClient && selectedClient.loyalty) {
       const updatedLoyalty = { 
         ...selectedClient.loyalty, 
@@ -234,7 +235,7 @@ const Clients = () => {
       
       setClients(prev => 
         prev.map(client => 
-          client.id === selectedClient.id 
+          client.id === clientId 
             ? { ...client, loyalty: updatedLoyalty } 
             : client
         )
@@ -244,7 +245,7 @@ const Clients = () => {
     }
   };
   
-  const handleAddStamp = () => {
+  const handleAddStamp = (clientId: string) => {
     if (selectedClient && selectedClient.loyalty) {
       const updatedLoyalty = { 
         ...selectedClient.loyalty, 
@@ -253,7 +254,7 @@ const Clients = () => {
       
       setClients(prev => 
         prev.map(client => 
-          client.id === selectedClient.id 
+          client.id === clientId 
             ? { ...client, loyalty: updatedLoyalty } 
             : client
         )
@@ -279,9 +280,9 @@ const Clients = () => {
               <ClientDetails 
                 client={selectedClient} 
                 serviceHistory={mockServiceHistory[selectedClient.id] || []}
-                onUpdateNotes={handleUpdateNotes}
-                onAddLoyaltyPoints={handleAddLoyaltyPoints}
-                onAddStamp={handleAddStamp}
+                onUpdateNotes={(notes) => handleUpdateNotes(selectedClient.id, notes)}
+                onAddLoyaltyPoints={(points) => handleAddLoyaltyPoints(selectedClient.id, points)}
+                onAddStamp={() => handleAddStamp(selectedClient.id)}
               />
               <LoyaltySystem 
                 client={selectedClient} 
@@ -324,6 +325,7 @@ const Clients = () => {
             clients={filteredClients} 
             onClientSelect={handleClientClick}
             onClientCreate={handleAddClient}
+            onClientClick={handleClientClick}
           />
           
           <ClientFormModal

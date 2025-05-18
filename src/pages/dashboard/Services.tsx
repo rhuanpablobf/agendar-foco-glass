@@ -242,6 +242,7 @@ const Services = () => {
 
             {dialogMode === 'service' ? (
               <ServiceForm
+                onSubmit={handleSaveService}
                 onSave={handleSaveService}
                 initialData={editingService || undefined}
                 availableServices={services}

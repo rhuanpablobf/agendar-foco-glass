@@ -12,10 +12,10 @@ import { toast } from 'sonner';
 interface ServiceListProps {
   services: Service[];
   onEdit: (service: Service) => void;
+  onDelete: (serviceId: string) => void;
   onToggleActive: (id: string, isActive: boolean) => void;
   onFilter: (category: ServiceCategory | 'all') => void;
   activeFilter: ServiceCategory | 'all';
-  onDelete: (serviceId: string) => void;
 }
 
 const getCategoryLabel = (category: ServiceCategory): string => {
