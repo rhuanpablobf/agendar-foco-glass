@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ClientList } from '@/components/clients/ClientList';
@@ -280,7 +281,7 @@ const Clients = () => {
                 client={selectedClient} 
                 serviceHistory={mockServiceHistory[selectedClient.id] || []}
                 onUpdateNotes={(notes) => handleUpdateNotes(selectedClient.id, notes)}
-                onAddLoyaltyPoints={(points) => handleAddLoyaltyPoints(selectedClient.id, points)}
+                onAddLoyaltyPoints={(points: number) => handleAddLoyaltyPoints(selectedClient.id, points)}
                 onAddStamp={() => handleAddStamp(selectedClient.id)}
               />
               <LoyaltySystem 
