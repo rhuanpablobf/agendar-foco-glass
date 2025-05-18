@@ -68,9 +68,10 @@ const Register = () => {
       // Tentar logout global primeiro para garantir um estado limpo
       try {
         await supabase.auth.signOut({ scope: 'global' });
+        console.log('Logout global realizado com sucesso');
       } catch (err) {
         // Continuar mesmo se falhar
-        console.log('Erro ao fazer logout antes do registro, continuando mesmo assim');
+        console.log('Erro ao fazer logout antes do registro, continuando mesmo assim:', err);
       }
       
       console.log('Registrando novo usuário:', data.email);
@@ -100,6 +101,9 @@ const Register = () => {
       }
 
       console.log('Usuário criado com ID:', authData.user.id);
+      
+      // Pequeno atraso para garantir que o trigger handle_new_user() tenha tempo de executar
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // 2. Criar uma empresa para o usuário
       const { data: companyData, error: companyError } = await supabase
