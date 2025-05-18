@@ -2,24 +2,42 @@
 export interface Client {
   id: string;
   name: string;
-  email?: string;
+  email?: string | null;
   phone: string;
-  createdAt: Date;
-  notes?: string;
+  notes?: string | null;
   preferences?: {
     communicationPreference?: 'email' | 'phone' | 'whatsapp';
     preferredProfessionals?: string[];
     preferredServices?: string[];
   };
   loyalty?: LoyaltyData;
+  client_loyalty?: LoyaltyData; // For Supabase join responses
+  created_at?: string;
+  updated_at?: string;
+  company_id?: string;
+  profile_id?: string | null;
+  communication_preference?: string | null;
 }
 
 export interface LoyaltyData {
+  client_id?: string;
   points: number;
-  totalSpent: number;
+  total_spent: number;
   visits: number;
-  stamps: number; // For virtual stamp card
-  lastVisit?: Date;
+  stamps: number;
+  last_visit?: string | Date | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ClientFormData {
+  name: string;
+  phone: string;
+  email?: string;
+  notes?: string;
+  preferences?: {
+    communicationPreference?: 'email' | 'phone' | 'whatsapp';
+  };
 }
 
 export interface ServiceHistoryItem {
@@ -30,21 +48,9 @@ export interface ServiceHistoryItem {
   professionalName: string;
   date: Date;
   price: number;
-  status: 'completed' | 'cancelled' | 'no-show';
-  rating?: number; // 1-5 stars
+  status: string;
+  rating?: number;
   feedback?: string;
   pointsEarned?: number;
   stampsEarned?: number;
-}
-
-export interface ClientFormData {
-  name: string;
-  email?: string;
-  phone: string;
-  notes?: string;
-  preferences?: {
-    communicationPreference?: 'email' | 'phone' | 'whatsapp';
-    preferredProfessionals?: string[];
-    preferredServices?: string[];
-  };
 }

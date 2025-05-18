@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ClientList } from '@/components/clients/ClientList';
 import { ClientDetails } from '@/components/clients/ClientDetails';
@@ -10,183 +11,55 @@ import { Client, ServiceHistoryItem, ClientFormData } from '@/types/client';
 import { ServiceHistory } from '@/components/clients/ServiceHistory';
 import { LoyaltySystem } from '@/components/clients/LoyaltySystem';
 import { toast } from 'sonner';
-
-// Mock data
-const mockClients: Client[] = [
-  {
-    id: '1',
-    name: 'Ana Silva',
-    email: 'ana.silva@example.com',
-    phone: '(11) 98765-4321',
-    createdAt: new Date('2023-01-15'),
-    notes: 'Preferência por produtos sem sulfato',
-    preferences: {
-      communicationPreference: 'whatsapp',
-      preferredProfessionals: ['1'],
-      preferredServices: ['1', '4']
-    },
-    loyalty: {
-      points: 75,
-      totalSpent: 620,
-      visits: 8,
-      stamps: 6,
-      lastVisit: new Date('2023-05-10')
-    }
-  },
-  {
-    id: '2',
-    name: 'Carlos Oliveira',
-    email: 'carlos.oliveira@example.com',
-    phone: '(11) 91234-5678',
-    createdAt: new Date('2023-02-20'),
-    loyalty: {
-      points: 30,
-      totalSpent: 250,
-      visits: 3,
-      stamps: 2,
-      lastVisit: new Date('2023-04-25')
-    }
-  },
-  {
-    id: '3',
-    name: 'Marina Santos',
-    email: 'marina.santos@example.com',
-    phone: '(11) 99876-5432',
-    createdAt: new Date('2023-03-05'),
-    loyalty: {
-      points: 120,
-      totalSpent: 980,
-      visits: 12,
-      stamps: 11,
-      lastVisit: new Date('2023-05-18')
-    }
-  },
-];
-
-// Mock service history
-const mockServiceHistory: Record<string, ServiceHistoryItem[]> = {
-  '1': [
-    {
-      id: '101',
-      serviceId: '1',
-      serviceName: 'Corte de Cabelo Feminino',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-05-10'),
-      price: 80,
-      status: 'completed',
-      rating: 5,
-      feedback: 'Adorei o corte, ficou exatamente como eu queria!',
-      pointsEarned: 8,
-      stampsEarned: 1
-    },
-    {
-      id: '102',
-      serviceId: '4',
-      serviceName: 'Escova',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-04-20'),
-      price: 60,
-      status: 'completed',
-      rating: 4,
-      pointsEarned: 6
-    },
-    {
-      id: '103',
-      serviceId: '1',
-      serviceName: 'Corte de Cabelo Feminino',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-03-15'),
-      price: 80,
-      status: 'completed',
-      pointsEarned: 8,
-      stampsEarned: 1
-    }
-  ],
-  '2': [
-    {
-      id: '201',
-      serviceId: '6',
-      serviceName: 'Maquiagem',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-04-25'),
-      price: 120,
-      status: 'completed',
-      rating: 5,
-      pointsEarned: 12,
-      stampsEarned: 1
-    },
-    {
-      id: '202',
-      serviceId: '2',
-      serviceName: 'Manicure',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-03-30'),
-      price: 35,
-      status: 'no-show',
-    }
-  ],
-  '3': [
-    {
-      id: '301',
-      serviceId: '1',
-      serviceName: 'Corte de Cabelo Feminino',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-05-18'),
-      price: 80,
-      status: 'completed',
-      rating: 5,
-      pointsEarned: 8,
-      stampsEarned: 1
-    },
-    {
-      id: '302',
-      serviceId: '3',
-      serviceName: 'Pedicure',
-      professionalId: '2',
-      professionalName: 'Carlos Oliveira',
-      date: new Date('2023-05-10'),
-      price: 45,
-      status: 'completed',
-      rating: 4,
-      pointsEarned: 4
-    },
-    {
-      id: '303',
-      serviceId: '2',
-      serviceName: 'Manicure',
-      professionalId: '2',
-      professionalName: 'Carlos Oliveira',
-      date: new Date('2023-05-10'),
-      price: 35,
-      status: 'completed',
-      rating: 4,
-      pointsEarned: 3
-    },
-    {
-      id: '304',
-      serviceId: '6',
-      serviceName: 'Maquiagem',
-      professionalId: '1',
-      professionalName: 'Ana Silva',
-      date: new Date('2023-04-25'),
-      price: 120,
-      status: 'cancelled',
-    }
-  ]
-};
+import { fetchClients, createClient, fetchClientServiceHistory, updateClientNotes, addLoyaltyPoints, addLoyaltyStamp } from '@/services/clientService';
+import { useAuthStatus } from '@/hooks/useAuthStatus';
 
 const Clients = () => {
-  const [clients, setClients] = useState(mockClients);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [serviceHistory, setServiceHistory] = useState<ServiceHistoryItem[]>([]);
+  const [serviceHistoryLoading, setServiceHistoryLoading] = useState(false);
   
+  // Check authentication status
+  const { checkAuth } = useAuthStatus();
+
+  // Load clients when the component mounts
+  useEffect(() => {
+    const loadClients = async () => {
+      setLoading(true);
+      // Check if user is authenticated
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
+      const clientsData = await fetchClients();
+      setClients(clientsData);
+      setLoading(false);
+    };
+
+    loadClients();
+  }, []);
+
+  // Load client service history when a client is selected
+  useEffect(() => {
+    if (selectedClient) {
+      const loadServiceHistory = async () => {
+        setServiceHistoryLoading(true);
+        const history = await fetchClientServiceHistory(selectedClient.id);
+        setServiceHistory(history);
+        setServiceHistoryLoading(false);
+      };
+
+      loadServiceHistory();
+    }
+  }, [selectedClient]);
+  
+  // Filter clients based on search term
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,73 +72,75 @@ const Clients = () => {
   
   const handleBackToList = () => {
     setSelectedClient(null);
+    // Refresh client list to get any updates
+    fetchClients().then(data => setClients(data));
   };
   
   const handleOpenForm = () => {
     setIsFormOpen(true);
   };
 
-  const handleAddClient = (clientData: ClientFormData) => {
-    // Implement client addition logic here
-    console.log("Adding new client:", clientData);
-    toast.success("Cliente adicionado com sucesso!");
-    setIsFormOpen(false);
+  const handleAddClient = async (clientData: ClientFormData) => {
+    const newClient = await createClient(clientData);
+    if (newClient) {
+      setClients(prevClients => [...prevClients, newClient]);
+      setIsFormOpen(false);
+    }
   };
   
-  const handleUpdateNotes = (clientId: string, notes: string) => {
+  const handleUpdateNotes = async (clientId: string, notes: string) => {
     if (selectedClient) {
-      setClients(prev => 
-        prev.map(client => 
-          client.id === clientId 
-            ? { ...client, notes } 
-            : client
-        )
-      );
-      toast.success("Anotações atualizadas com sucesso!");
+      const success = await updateClientNotes(clientId, notes);
+      if (success) {
+        setSelectedClient({
+          ...selectedClient,
+          notes
+        });
+      }
     }
   };
   
-  const handleAddLoyaltyPoints = (clientId: string, points: number) => {
+  const handleAddLoyaltyPoints = async (clientId: string, points: number) => {
     if (selectedClient && selectedClient.loyalty) {
-      const updatedLoyalty = { 
-        ...selectedClient.loyalty, 
-        points: selectedClient.loyalty.points + points 
-      };
-      
-      setClients(prev => 
-        prev.map(client => 
-          client.id === clientId 
-            ? { ...client, loyalty: updatedLoyalty } 
-            : client
-        )
-      );
-      
-      toast.success(`${points} pontos adicionados com sucesso!`);
+      const success = await addLoyaltyPoints(clientId, points);
+      if (success) {
+        const updatedLoyalty = { 
+          ...selectedClient.loyalty, 
+          points: selectedClient.loyalty.points + points 
+        };
+        
+        setSelectedClient({
+          ...selectedClient,
+          loyalty: updatedLoyalty
+        });
+      }
     }
   };
   
-  const handleAddStamp = (clientId: string) => {
+  const handleAddStamp = async (clientId: string) => {
     if (selectedClient && selectedClient.loyalty) {
-      const updatedLoyalty = { 
-        ...selectedClient.loyalty, 
-        stamps: selectedClient.loyalty.stamps + 1 
-      };
-      
-      setClients(prev => 
-        prev.map(client => 
-          client.id === clientId 
-            ? { ...client, loyalty: updatedLoyalty } 
-            : client
-        )
-      );
-      
-      toast.success("Selo adicionado com sucesso!");
+      const success = await addLoyaltyStamp(clientId);
+      if (success) {
+        const updatedLoyalty = { 
+          ...selectedClient.loyalty, 
+          stamps: selectedClient.loyalty.stamps + 1 
+        };
+        
+        setSelectedClient({
+          ...selectedClient,
+          loyalty: updatedLoyalty
+        });
+      }
     }
   };
   
   return (
     <MainLayout userType="company">
-      {selectedClient ? (
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-lg">Carregando clientes...</p>
+        </div>
+      ) : selectedClient ? (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <Button variant="outline" onClick={handleBackToList}>
@@ -278,19 +153,22 @@ const Clients = () => {
             <div className="lg:col-span-2 space-y-6">
               <ClientDetails 
                 client={selectedClient} 
-                serviceHistory={mockServiceHistory[selectedClient.id] || []}
+                serviceHistory={serviceHistory}
                 onUpdateNotes={(notes) => handleUpdateNotes(selectedClient.id, notes)}
                 onAddLoyaltyPoints={(points) => handleAddLoyaltyPoints(selectedClient.id, points)}
                 onAddStamp={() => handleAddStamp(selectedClient.id)}
               />
               <LoyaltySystem 
                 client={selectedClient} 
-                serviceHistory={mockServiceHistory[selectedClient.id] || []} 
+                serviceHistory={serviceHistory} 
               />
             </div>
             
             <div className="lg:col-span-3">
-              <ServiceHistory history={mockServiceHistory[selectedClient.id] || []} />
+              <ServiceHistory 
+                history={serviceHistory} 
+                loading={serviceHistoryLoading} 
+              />
             </div>
           </div>
         </div>
@@ -320,12 +198,29 @@ const Clients = () => {
             />
           </div>
           
-          <ClientList 
-            clients={filteredClients} 
-            onClientSelect={handleClientClick}
-            onClientCreate={handleAddClient}
-            onClientClick={handleClientClick}
-          />
+          {filteredClients.length > 0 ? (
+            <ClientList 
+              clients={filteredClients} 
+              onClientSelect={handleClientClick}
+              onClientCreate={handleAddClient}
+              onClientClick={handleClientClick}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                {searchTerm ? "Nenhum cliente encontrado com estes critérios." : "Nenhum cliente cadastrado ainda."}
+              </p>
+              {searchTerm && (
+                <Button 
+                  variant="link" 
+                  onClick={() => setSearchTerm("")}
+                  className="mt-2"
+                >
+                  Limpar busca
+                </Button>
+              )}
+            </div>
+          )}
           
           <ClientFormModal
             isOpen={isFormOpen}
