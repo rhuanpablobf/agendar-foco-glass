@@ -17,17 +17,43 @@ import Clients from "./pages/dashboard/Clients";
 import Financial from "./pages/dashboard/Financial";
 import Reports from "./pages/dashboard/Reports";
 import Settings from "./pages/dashboard/Settings";
+import { useEffect, useState } from "react";
 import { PermissionProvider } from "./hooks/usePermission";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import { ProtectedLayout } from "./components/auth/ProtectedLayout";
 
 const queryClient = new QueryClient();
 
 // Componente para redirecionar com base no perfil de usuário
 const ProfileRedirect = () => {
-  // This will be handled by the ProtectedLayout which will check 
-  // the user's role and redirect accordingly
-  return <Navigate to="/dashboard" replace />;
+  // Simulação de verificação de perfil - em produção, use um hook/contexto de autenticação
+  const [userRole, setUserRole] = useState<'admin' | 'company' | null>(null);
+  
+  useEffect(() => {
+    // Simulação de verificação de usuário logado
+    const checkUserRole = () => {
+      // Em produção, isso seria baseado no login real
+      // Aqui estamos apenas simulando baseado na última rota visitada
+      const lastPath = localStorage.getItem('lastPath') || '';
+      
+      if (lastPath.includes('admin')) {
+        setUserRole('admin');
+      } else if (lastPath.includes('dashboard')) {
+        setUserRole('company');
+      } else {
+        // Valor padrão para demonstração
+        setUserRole('company');
+      }
+    };
+    
+    checkUserRole();
+  }, []);
+  
+  if (!userRole) return null; // Renderizar um loading state enquanto verifica
+  
+  if (userRole === 'admin') return <Navigate to="/admin" replace />;
+  if (userRole === 'company') return <Navigate to="/dashboard" replace />;
+  
+  return <Navigate to="/auth/login" replace />;
 };
 
 const App = () => (
@@ -50,55 +76,52 @@ const App = () => (
             {/* Redirecionamento após login baseado no perfil */}
             <Route path="/profile" element={<ProfileRedirect />} />
             
-            {/* Protege todas as rotas do dashboard */}
-            <Route element={<ProtectedLayout />}>
-              {/* Rotas de empresa (dashboard) */}
-              <Route path="/dashboard">
-                <Route index element={<CompanyDashboard />} />
-                <Route path="schedule" element={
-                  <ProtectedRoute requiredPermission="agenda">
-                    <Schedule />
-                  </ProtectedRoute>
-                } />
-                <Route path="professionals" element={
-                  <ProtectedRoute requiredPermission="professionals">
-                    <Team />
-                  </ProtectedRoute>
-                } />
-                <Route path="services" element={
-                  <ProtectedRoute requiredPermission="services">
-                    <Services />
-                  </ProtectedRoute>
-                } />
-                <Route path="clients" element={
-                  <ProtectedRoute requiredPermission="clients">
-                    <Clients />
-                  </ProtectedRoute>
-                } />
-                <Route path="financial" element={
-                  <ProtectedRoute requiredPermission="financial">
-                    <Financial />
-                  </ProtectedRoute>
-                } />
-                <Route path="reports" element={
-                  <ProtectedRoute requiredPermission="reports">
-                    <Reports />
-                  </ProtectedRoute>
-                } />
-                <Route path="settings" element={
-                  <ProtectedRoute requiredPermission="settings">
-                    <Settings />
-                  </ProtectedRoute>
-                } />
-              </Route>
-              
-              {/* Rotas de administrador */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/companies" element={<AdminDashboard />} />
-              <Route path="/admin/plans" element={<AdminDashboard />} />
-              <Route path="/admin/subadmins" element={<AdminDashboard />} />
-              <Route path="/admin/settings" element={<AdminDashboard />} />
+            {/* Rotas de empresa (dashboard) */}
+            <Route path="/dashboard">
+              <Route index element={<CompanyDashboard />} />
+              <Route path="schedule" element={
+                <ProtectedRoute requiredPermission="agenda">
+                  <Schedule />
+                </ProtectedRoute>
+              } />
+              <Route path="professionals" element={
+                <ProtectedRoute requiredPermission="professionals">
+                  <Team />
+                </ProtectedRoute>
+              } />
+              <Route path="services" element={
+                <ProtectedRoute requiredPermission="services">
+                  <Services />
+                </ProtectedRoute>
+              } />
+              <Route path="clients" element={
+                <ProtectedRoute requiredPermission="clients">
+                  <Clients />
+                </ProtectedRoute>
+              } />
+              <Route path="financial" element={
+                <ProtectedRoute requiredPermission="financial">
+                  <Financial />
+                </ProtectedRoute>
+              } />
+              <Route path="reports" element={
+                <ProtectedRoute requiredPermission="reports">
+                  <Reports />
+                </ProtectedRoute>
+              } />
+              <Route path="settings" element={
+                <ProtectedRoute requiredPermission="settings">
+                  <Settings />
+                </ProtectedRoute>
+              } />
             </Route>
+            
+            {/* Rotas de administrador - updated to use the same component but with different paths */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/companies" element={<AdminDashboard />} />
+            <Route path="/admin/plans" element={<AdminDashboard />} />
+            <Route path="/admin/subadmins" element={<AdminDashboard />} />
+            <Route path="/admin/settings" element={<AdminDashboard />} />
             
             {/* Redirecionamentos para manter compatibilidade temporária */}
             <Route path="/agenda" element={<Navigate to="/dashboard/schedule" replace />} />

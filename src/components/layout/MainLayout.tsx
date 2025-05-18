@@ -1,65 +1,33 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Sidebar } from './Sidebar';
-import { TopBar } from './TopBar';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  userType: 'admin' | 'company';
+  userType?: 'company' | 'professional' | 'client' | 'admin';
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ children, userType }) => {
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Fetch user profile information
-    const getUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, last_name')
-          .eq('id', user.id)
-          .single();
-          
-        if (profile) {
-          setUserName(`${profile.first_name} ${profile.last_name}`);
-        }
-      }
-    };
-    
-    getUserProfile();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/auth/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+export const MainLayout = ({ children, userType = 'company' }: MainLayoutProps) => {
+  const isMobile = useIsMobile();
+  const [isMobileOpen, setIsMobileOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <TopBar 
-        toggleSidebar={() => setIsMobileOpen(!isMobileOpen)} 
-        isSidebarOpen={isMobileOpen}
-        userName={userName || 'Usuário'}
-        onLogout={handleLogout}
+    <div className="min-h-screen flex w-full">
+      <Sidebar 
+        userType={userType} 
+        isMobileOpen={isMobileOpen} 
+        setIsMobileOpen={setIsMobileOpen} 
       />
-      <div className="flex flex-1 h-[calc(100vh-64px)]">
-        <Sidebar 
-          userType={userType}
-          isMobileOpen={isMobileOpen}
-          setIsMobileOpen={setIsMobileOpen}
-        />
-        <main className={`flex-1 p-6 transition-all duration-300 overflow-auto ${isMobileOpen ? 'lg:ml-64' : ''}`}>
+      <div 
+        className={cn(
+          "flex-1 transition-all duration-300 p-5",
+          !isMobile && "ml-64",
+          "bg-background"
+        )}
+      >
+        <main className="container mx-auto max-w-7xl">
           {children}
         </main>
       </div>

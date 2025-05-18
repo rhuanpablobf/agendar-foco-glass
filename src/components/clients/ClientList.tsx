@@ -109,16 +109,6 @@ export const ClientList = ({
                       </div>
                     </div>
                   )}
-                  {client.client_loyalty && (
-                    <div className="text-right">
-                      <div className="text-sm text-amber-400">
-                        {client.client_loyalty.points} pontos
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {client.client_loyalty.visits} visitas
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}

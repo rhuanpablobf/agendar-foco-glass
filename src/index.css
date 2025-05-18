@@ -5,83 +5,83 @@
 
 @layer base {
   :root {
-    --background: 250 10% 98%;
-    --foreground: 250 10% 15%;
+    --background: 240 10% 98%;
+    --foreground: 240 10% 15%;
 
-    --card: 250 8% 99%;
-    --card-foreground: 250 10% 10%;
+    --card: 240 8% 99%;
+    --card-foreground: 240 10% 10%;
 
-    --popover: 250 8% 99%;
-    --popover-foreground: 250 10% 10%;
+    --popover: 240 8% 99%;
+    --popover-foreground: 240 10% 10%;
 
-    --primary: 255 70% 65%;
-    --primary-foreground: 250 95% 98%;
+    --primary: 250 70% 65%;
+    --primary-foreground: 240 95% 98%;
 
     --secondary: 270 60% 70%;
-    --secondary-foreground: 250 95% 98%;
+    --secondary-foreground: 240 95% 98%;
 
-    --muted: 250 5% 93%;
-    --muted-foreground: 250 4% 40%;
+    --muted: 240 5% 93%;
+    --muted-foreground: 240 4% 40%;
 
     --accent: 280 55% 72%;
-    --accent-foreground: 250 95% 98%;
+    --accent-foreground: 240 95% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 250 6% 90%;
-    --input: 250 6% 90%;
-    --ring: 255 70% 65%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 250 70% 65%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 250 10% 99%;
-    --sidebar-foreground: 250 10% 20%;
-    --sidebar-primary: 255 70% 65%;
-    --sidebar-primary-foreground: 250 95% 98%;
-    --sidebar-accent: 250 10% 96%;
-    --sidebar-accent-foreground: 250 10% 20%;
-    --sidebar-border: 250 10% 90%;
-    --sidebar-ring: 255 70% 65%;
+    --sidebar-background: 240 10% 99%;
+    --sidebar-foreground: 240 10% 20%;
+    --sidebar-primary: 250 70% 65%;
+    --sidebar-primary-foreground: 240 95% 98%;
+    --sidebar-accent: 240 10% 96%;
+    --sidebar-accent-foreground: 240 10% 20%;
+    --sidebar-border: 240 10% 90%;
+    --sidebar-ring: 250 70% 65%;
   }
 
   .dark {
-    --background: 250 10% 5%;
-    --foreground: 250 10% 95%;
+    --background: 240 10% 5%;
+    --foreground: 240 10% 95%;
 
-    --card: 250 10% 8%;
-    --card-foreground: 250 10% 95%;
+    --card: 240 10% 8%;
+    --card-foreground: 240 10% 95%;
 
-    --popover: 250 10% 8%;
-    --popover-foreground: 250 10% 95%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 240 10% 95%;
 
-    --primary: 255 70% 65%;
-    --primary-foreground: 250 10% 98%;
+    --primary: 250 70% 65%;
+    --primary-foreground: 240 10% 98%;
 
     --secondary: 270 60% 70%;
-    --secondary-foreground: 250 10% 98%;
+    --secondary-foreground: 240 10% 98%;
 
-    --muted: 250 10% 15%;
-    --muted-foreground: 250 10% 70%;
+    --muted: 240 10% 15%;
+    --muted-foreground: 240 10% 70%;
 
     --accent: 280 55% 72%;
-    --accent-foreground: 250 10% 98%;
+    --accent-foreground: 240 10% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 250 10% 98%;
+    --destructive-foreground: 240 10% 98%;
 
-    --border: 250 10% 18%;
-    --input: 250 10% 18%;
-    --ring: 255 70% 65%;
+    --border: 240 10% 18%;
+    --input: 240 10% 18%;
+    --ring: 250 70% 65%;
 
-    --sidebar-background: 250 10% 7%;
-    --sidebar-foreground: 250 10% 90%;
-    --sidebar-primary: 255 70% 65%;
-    --sidebar-primary-foreground: 250 10% 98%;
-    --sidebar-accent: 250 10% 10%;
-    --sidebar-accent-foreground: 250 10% 90%;
-    --sidebar-border: 250 10% 15%;
-    --sidebar-ring: 255 70% 65%;
+    --sidebar-background: 240 10% 7%;
+    --sidebar-foreground: 240 10% 90%;
+    --sidebar-primary: 250 70% 65%;
+    --sidebar-primary-foreground: 240 10% 98%;
+    --sidebar-accent: 240 10% 10%;
+    --sidebar-accent-foreground: 240 10% 90%;
+    --sidebar-border: 240 10% 15%;
+    --sidebar-ring: 250 70% 65%;
   }
 }
 
@@ -113,114 +113,6 @@
   }
   
   .dashboard-card {
-    @apply p-5 border border-border bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow;
-  }
-
-  .stat-card {
-    @apply flex flex-col p-6 border border-border bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow;
-  }
-  
-  .stat-value {
-    @apply text-3xl font-bold mt-2;
-  }
-  
-  .stat-label {
-    @apply text-sm text-muted-foreground;
-  }
-}
-
-/* Estilos para o grid de horários */
-.grid-cols-24 {
-  grid-template-columns: repeat(24, minmax(60px, 1fr));
-}
-
-/* Estilizando o overlay de fundo para o cabeçalho de horários */
-.schedule-header {
-  position: sticky;
-  top: 0;
-  background: rgba(10, 10, 14, 0.8);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-}
-
-/* Estilos para os slots de horário */
-.time-slot {
-  height: 4rem;
-  border-radius: 0.375rem;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.time-slot-free {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.time-slot-free:hover {
-  background: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-}
-
-.time-slot-booked {
-  background: rgba(147, 51, 234, 0.2);
-  border: 1px solid rgba(147, 51, 234, 0.3);
-}
-
-.time-slot-confirmed {
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.time-slot-pending {
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-/* Estilos para a visualização de agendamentos */
-.appointment-card {
-  position: absolute;
-  inset: 0;
-  padding: 0.5rem;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.appointment-client {
-  font-weight: 500;
-  font-size: 0.875rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.appointment-service {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.appointment-time {
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-/* Estilos para a visualização responsiva */
-@media (max-width: 768px) {
-  .schedule-scroll-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 1rem;
-  }
-  
-  .grid-cols-24 {
-    width: fit-content;
-    min-width: 100%;
+    @apply glass-card p-5 transition-all duration-300 hover:shadow-glass-lg;
   }
 }
