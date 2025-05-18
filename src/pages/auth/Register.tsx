@@ -60,6 +60,22 @@ const Register = () => {
     try {
       setLoading(true);
       
+      // Cleanup auth state to prevent issues
+      localStorage.removeItem('supabase.auth.token');
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Try global sign out first to ensure clean state
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+        console.log('Sign out before registration failed, continuing anyway');
+      }
+      
       // 1. Register the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
@@ -74,9 +90,18 @@ const Register = () => {
         }
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Falha ao criar usuário');
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
+      
+      if (!authData.user) {
+        console.error('No user returned from signUp');
+        throw new Error('Falha ao criar usuário');
+      }
 
+      console.log('User created:', authData.user.id);
+      
       // 2. Create a company for the user
       const { data: companyData, error: companyError } = await supabase
         .from('companies')
@@ -84,7 +109,12 @@ const Register = () => {
         .select('id')
         .single();
 
-      if (companyError) throw companyError;
+      if (companyError) {
+        console.error('Company creation error:', companyError);
+        throw companyError;
+      }
+      
+      console.log('Company created:', companyData.id);
       
       // 3. Update user's profile with company_id
       const { error: profileError } = await supabase
@@ -92,7 +122,10 @@ const Register = () => {
         .update({ company_id: companyData.id })
         .eq('id', authData.user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        throw profileError;
+      }
       
       // 4. Create a free subscription for the company
       const { data: freePlan } = await supabase
@@ -110,7 +143,10 @@ const Register = () => {
             is_active: true
           }]);
           
-        if (subscriptionError) throw subscriptionError;
+        if (subscriptionError) {
+          console.error('Subscription creation error:', subscriptionError);
+          throw subscriptionError;
+        }
       }
 
       toast.success('Conta criada com sucesso!');
@@ -122,10 +158,10 @@ const Register = () => {
       console.error('Registration error:', error);
       
       // Handle specific error cases
-      if (error.message.includes('User already registered')) {
+      if (error.message && error.message.includes('User already registered')) {
         toast.error('Email já registrado. Tente fazer login.');
       } else {
-        toast.error('Erro ao criar conta. Tente novamente.');
+        toast.error(`Erro ao criar conta: ${error.message || 'Tente novamente.'}`);
       }
     } finally {
       setLoading(false);
