@@ -15,6 +15,7 @@ interface ServiceListProps {
   onToggleActive: (id: string, isActive: boolean) => void;
   onFilter: (category: ServiceCategory | 'all') => void;
   activeFilter: ServiceCategory | 'all';
+  onDelete: (serviceId: string) => void;
 }
 
 const getCategoryLabel = (category: ServiceCategory): string => {
@@ -23,7 +24,8 @@ const getCategoryLabel = (category: ServiceCategory): string => {
     nails: 'Unhas',
     skincare: 'Skincare',
     makeup: 'Maquiagem',
-    other: 'Outro'
+    other: 'Outro',
+    combo: 'Combo'
   };
   return categories[category];
 };
@@ -33,7 +35,8 @@ export const ServiceList = ({
   onEdit, 
   onToggleActive,
   onFilter,
-  activeFilter
+  activeFilter,
+  onDelete
 }: ServiceListProps) => {
   const filterOptions: Array<{ value: ServiceCategory | 'all'; label: string }> = [
     { value: 'all', label: 'Todos' },
@@ -41,7 +44,8 @@ export const ServiceList = ({
     { value: 'nails', label: 'Unhas' },
     { value: 'skincare', label: 'Skincare' },
     { value: 'makeup', label: 'Maquiagem' },
-    { value: 'other', label: 'Outro' }
+    { value: 'other', label: 'Outro' },
+    { value: 'combo', label: 'Combos' }
   ];
 
   const handleToggleActive = (service: Service) => {

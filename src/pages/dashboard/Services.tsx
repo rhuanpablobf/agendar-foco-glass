@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ServiceList } from '@/components/services/ServiceList';
 import { ServiceForm } from '@/components/services/ServiceForm';
 import { ComboForm } from '@/components/services/ComboForm';
-import { ServiceFormData, Service } from '@/types/service';
+import { ServiceFormData, Service, ServiceCategory } from '@/types/service';
 import { v4 as uuid } from 'uuid';
 import { toast } from 'sonner';
 
@@ -83,6 +83,7 @@ const Services = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'service' | 'combo'>('service');
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [activeFilter, setActiveFilter] = useState<ServiceCategory | 'all'>('all');
 
   const handleOpenNewServiceDialog = () => {
     setEditingService(null);
@@ -141,6 +142,14 @@ const Services = () => {
     toast.success("Serviço excluído com sucesso!");
   };
 
+  const handleFilterChange = (category: ServiceCategory | 'all') => {
+    setActiveFilter(category);
+  };
+
+  const filteredServices = activeFilter === 'all' 
+    ? services 
+    : services.filter(service => service.category === activeFilter);
+
   return (
     <MainLayout userType="company">
       <div className="space-y-6">
@@ -174,7 +183,9 @@ const Services = () => {
               services={services}
               onEdit={handleOpenEditDialog}
               onDelete={handleDeleteService}
-              onToggleStatus={handleToggleServiceStatus}
+              onToggleActive={handleToggleServiceStatus}
+              onFilter={handleFilterChange}
+              activeFilter={activeFilter}
             />
           </TabsContent>
 
@@ -183,7 +194,9 @@ const Services = () => {
               services={services.filter(service => service.isActive)}
               onEdit={handleOpenEditDialog}
               onDelete={handleDeleteService}
-              onToggleStatus={handleToggleServiceStatus}
+              onToggleActive={handleToggleServiceStatus}
+              onFilter={handleFilterChange}
+              activeFilter={activeFilter}
             />
           </TabsContent>
 
@@ -192,7 +205,9 @@ const Services = () => {
               services={services.filter(service => !service.isActive)}
               onEdit={handleOpenEditDialog}
               onDelete={handleDeleteService}
-              onToggleStatus={handleToggleServiceStatus}
+              onToggleActive={handleToggleServiceStatus}
+              onFilter={handleFilterChange}
+              activeFilter={activeFilter}
             />
           </TabsContent>
 
@@ -201,7 +216,9 @@ const Services = () => {
               services={services.filter(service => service.isCombo)}
               onEdit={handleOpenEditDialog}
               onDelete={handleDeleteService}
-              onToggleStatus={handleToggleServiceStatus}
+              onToggleActive={handleToggleServiceStatus}
+              onFilter={handleFilterChange}
+              activeFilter={activeFilter}
             />
           </TabsContent>
         </Tabs>
@@ -227,6 +244,8 @@ const Services = () => {
               <ServiceForm
                 onSave={handleSaveService}
                 initialData={editingService || undefined}
+                availableServices={services}
+                isEdit={!!editingService}
               />
             ) : (
               <ComboForm

@@ -52,16 +52,16 @@ export const ProfessionalServices: React.FC<ProfessionalServicesProps> = ({
     : [];
   
   const handleToggleService = (serviceId: string) => {
-    setSelected(prev => 
-      prev.includes(serviceId)
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId]
+    setSelected(prevSelected => 
+      prevSelected.includes(serviceId)
+        ? prevSelected.filter(id => id !== serviceId)
+        : [...prevSelected, serviceId]
     );
     
     // Se o serviço não tem uma comissão específica definida, use o padrão
-    if (!commissions[serviceId] && !prev.includes(serviceId)) {
-      setCommissions(prev => ({
-        ...prev,
+    if (!commissions[serviceId] && !selected.includes(serviceId)) {
+      setCommissions(prevCommissions => ({
+        ...prevCommissions,
         [serviceId]: commission
       }));
     }

@@ -10,7 +10,28 @@ import { ProfessionalServices } from '@/components/team/ProfessionalServices';
 import { CommissionConfig } from '@/components/team/CommissionConfig';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Service } from '@/types/service';
+import { Professional, Schedule } from '@/types/professional';
 import { toast } from 'sonner';
+
+// Default schedule
+const DEFAULT_SCHEDULE_DAY = {
+  active: true,
+  start: '09:00',
+  end: '18:00',
+  breakStart: '12:00',
+  breakEnd: '13:00',
+  breakEnabled: true
+};
+
+const DEFAULT_SCHEDULE: Schedule = {
+  monday: { ...DEFAULT_SCHEDULE_DAY },
+  tuesday: { ...DEFAULT_SCHEDULE_DAY },
+  wednesday: { ...DEFAULT_SCHEDULE_DAY },
+  thursday: { ...DEFAULT_SCHEDULE_DAY },
+  friday: { ...DEFAULT_SCHEDULE_DAY },
+  saturday: { ...DEFAULT_SCHEDULE_DAY, end: '16:00' },
+  sunday: { ...DEFAULT_SCHEDULE_DAY, active: false }
+};
 
 // Mock data para serviços
 const mockServices: Service[] = [
@@ -72,7 +93,7 @@ const Team = () => {
   
   const [selectedTab, setSelectedTab] = useState<'list' | 'create' | 'schedule' | 'services'>('list');
   const [selectedProfessional, setSelectedProfessional] = useState<string | null>(null);
-  const [professionals, setProfessionals] = useState([
+  const [professionals, setProfessionals] = useState<Professional[]>([
     {
       id: '1',
       name: 'Ana Silva',
@@ -84,7 +105,8 @@ const Team = () => {
         '1': 30,
         '4': 25
       },
-      defaultCommission: 30
+      defaultCommission: 30,
+      schedule: DEFAULT_SCHEDULE
     },
     {
       id: '2',
@@ -94,7 +116,8 @@ const Team = () => {
       bio: 'Barbeiro especializado em cortes masculinos modernos',
       services: [],
       commissions: {},
-      defaultCommission: 30
+      defaultCommission: 30,
+      schedule: DEFAULT_SCHEDULE
     }
   ]);
 
@@ -126,6 +149,16 @@ const Team = () => {
     );
     
     toast.success('Serviços e comissões salvos com sucesso!');
+  };
+
+  const handleSaveProfessional = (professional: Professional) => {
+    // Implement saving professional
+    console.log("Saving professional:", professional);
+    toast.success("Profissional salvo com sucesso!");
+  };
+
+  const handleCancelForm = () => {
+    setSelectedTab('list');
   };
 
   const getCurrentProfessional = () => {
@@ -164,7 +197,12 @@ const Team = () => {
           </TabsContent>
 
           <TabsContent value="create">
-            <ProfessionalForm />
+            <ProfessionalForm 
+              professional={null} 
+              services={mockServices} 
+              onSave={handleSaveProfessional} 
+              onCancel={handleCancelForm} 
+            />
           </TabsContent>
 
           {selectedProfessional && (

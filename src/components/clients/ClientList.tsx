@@ -12,10 +12,16 @@ import { toast } from 'sonner';
 interface ClientListProps {
   clients: Client[];
   onClientSelect: (client: Client) => void;
-  onClientCreate: (data: ClientFormData) => void;
+  onClientCreate?: (data: ClientFormData) => void;
+  onClientClick?: (client: Client) => void;
 }
 
-export const ClientList = ({ clients, onClientSelect, onClientCreate }: ClientListProps) => {
+export const ClientList = ({ 
+  clients, 
+  onClientSelect, 
+  onClientCreate,
+  onClientClick
+}: ClientListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddClientDialog, setShowAddClientDialog] = useState(false);
 
@@ -29,9 +35,19 @@ export const ClientList = ({ clients, onClientSelect, onClientCreate }: ClientLi
   });
 
   const handleCreateClient = (data: ClientFormData) => {
-    onClientCreate(data);
+    if (onClientCreate) {
+      onClientCreate(data);
+    }
     setShowAddClientDialog(false);
     toast.success("Cliente cadastrado com sucesso!");
+  };
+
+  const handleClientClick = (client: Client) => {
+    if (onClientClick) {
+      onClientClick(client);
+    } else if (onClientSelect) {
+      onClientSelect(client);
+    }
   };
 
   return (
@@ -74,7 +90,7 @@ export const ClientList = ({ clients, onClientSelect, onClientCreate }: ClientLi
               <div
                 key={client.id}
                 className="p-4 hover:bg-white/5 cursor-pointer transition-colors"
-                onClick={() => onClientSelect(client)}
+                onClick={() => handleClientClick(client)}
               >
                 <div className="flex items-center justify-between">
                   <div>

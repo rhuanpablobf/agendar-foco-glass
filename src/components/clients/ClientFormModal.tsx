@@ -15,12 +15,14 @@ import { Button } from '@/components/ui/button';
 interface ClientFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ClientFormData) => void;
+  onSubmit?: (data: ClientFormData) => void;
 }
 
 export const ClientFormModal = ({ isOpen, onClose, onSubmit }: ClientFormModalProps) => {
   const handleSubmit = (data: ClientFormData) => {
-    onSubmit(data);
+    if (onSubmit) {
+      onSubmit(data);
+    }
     onClose(); // Fechar o modal após o envio bem-sucedido
   };
 

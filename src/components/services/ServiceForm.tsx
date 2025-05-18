@@ -21,6 +21,7 @@ const serviceCategories: { value: ServiceCategory; label: string }[] = [
   { value: 'skincare', label: 'Skincare' },
   { value: 'makeup', label: 'Maquiagem' },
   { value: 'other', label: 'Outro' },
+  { value: 'combo', label: 'Combo' },
 ];
 
 const formSchema = z.object({
@@ -28,7 +29,7 @@ const formSchema = z.object({
   description: z.string().optional(),
   duration: z.coerce.number().min(5, { message: "A duração mínima é de 5 minutos" }),
   price: z.coerce.number().min(0, { message: "O preço não pode ser negativo" }),
-  category: z.enum(['hair', 'nails', 'skincare', 'makeup', 'other']),
+  category: z.enum(['hair', 'nails', 'skincare', 'makeup', 'other', 'combo']),
   isCombo: z.boolean().default(false),
   comboServices: z.array(z.string()).optional(),
   comboDiscount: z.coerce.number().min(0).max(100).optional(),
@@ -39,13 +40,15 @@ interface ServiceFormProps {
   initialData?: Partial<ServiceFormData>;
   availableServices?: Service[];
   isEdit?: boolean;
+  onSave?: (data: ServiceFormData) => void;
 }
 
 export const ServiceForm = ({
   onSubmit,
   initialData,
   availableServices = [],
-  isEdit = false
+  isEdit = false,
+  onSave
 }: ServiceFormProps) => {
   const [isCombo, setIsCombo] = useState(initialData?.isCombo || false);
   const [selectedServices, setSelectedServices] = useState<string[]>(initialData?.comboServices || []);
@@ -86,7 +89,7 @@ export const ServiceForm = ({
     }
   }, [selectedServices, form.watch("comboDiscount"), isCombo, availableServices]);
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleFormSubmit = (values: z.infer<typeof formSchema>) => {
     if (isCombo && selectedServices.length < 2) {
       toast.error("Um combo deve conter pelo menos 2 serviços");
       return;
@@ -104,7 +107,11 @@ export const ServiceForm = ({
       comboDiscount: isCombo ? values.comboDiscount : undefined,
     };
     
-    onSubmit(serviceData);
+    if (onSave) {
+      onSave(serviceData);
+    } else if (onSubmit) {
+      onSubmit(serviceData);
+    }
   };
 
   const toggleServiceSelection = (serviceId: string) => {
@@ -115,9 +122,10 @@ export const ServiceForm = ({
     );
   };
 
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"

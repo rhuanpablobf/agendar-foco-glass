@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ClientList } from '@/components/clients/ClientList';
@@ -7,9 +6,10 @@ import { ClientFormModal } from '@/components/clients/ClientFormModal';
 import { Button } from '@/components/ui/button';
 import { Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Client, ServiceHistoryItem } from '@/types/client';
+import { Client, ServiceHistoryItem, ClientFormData } from '@/types/client';
 import { ServiceHistory } from '@/components/clients/ServiceHistory';
 import { LoyaltySystem } from '@/components/clients/LoyaltySystem';
+import { toast } from 'sonner';
 
 // Mock data
 const mockClients: Client[] = [
@@ -204,6 +204,64 @@ const Clients = () => {
   const handleOpenForm = () => {
     setIsFormOpen(true);
   };
+
+  const handleAddClient = (clientData: ClientFormData) => {
+    // Implement client addition logic here
+    console.log("Adding new client:", clientData);
+    toast.success("Cliente adicionado com sucesso!");
+    setIsFormOpen(false);
+  };
+  
+  const handleUpdateNotes = (notes: string) => {
+    if (selectedClient) {
+      setClients(prev => 
+        prev.map(client => 
+          client.id === selectedClient.id 
+            ? { ...client, notes } 
+            : client
+        )
+      );
+      toast.success("Anotações atualizadas com sucesso!");
+    }
+  };
+  
+  const handleAddLoyaltyPoints = (points: number) => {
+    if (selectedClient && selectedClient.loyalty) {
+      const updatedLoyalty = { 
+        ...selectedClient.loyalty, 
+        points: selectedClient.loyalty.points + points 
+      };
+      
+      setClients(prev => 
+        prev.map(client => 
+          client.id === selectedClient.id 
+            ? { ...client, loyalty: updatedLoyalty } 
+            : client
+        )
+      );
+      
+      toast.success(`${points} pontos adicionados com sucesso!`);
+    }
+  };
+  
+  const handleAddStamp = () => {
+    if (selectedClient && selectedClient.loyalty) {
+      const updatedLoyalty = { 
+        ...selectedClient.loyalty, 
+        stamps: selectedClient.loyalty.stamps + 1 
+      };
+      
+      setClients(prev => 
+        prev.map(client => 
+          client.id === selectedClient.id 
+            ? { ...client, loyalty: updatedLoyalty } 
+            : client
+        )
+      );
+      
+      toast.success("Selo adicionado com sucesso!");
+    }
+  };
   
   return (
     <MainLayout userType="company">
@@ -218,7 +276,13 @@ const Clients = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <ClientDetails client={selectedClient} />
+              <ClientDetails 
+                client={selectedClient} 
+                serviceHistory={mockServiceHistory[selectedClient.id] || []}
+                onUpdateNotes={handleUpdateNotes}
+                onAddLoyaltyPoints={handleAddLoyaltyPoints}
+                onAddStamp={handleAddStamp}
+              />
               <LoyaltySystem 
                 client={selectedClient} 
                 serviceHistory={mockServiceHistory[selectedClient.id] || []} 
@@ -258,12 +322,14 @@ const Clients = () => {
           
           <ClientList 
             clients={filteredClients} 
-            onClientClick={handleClientClick} 
+            onClientSelect={handleClientClick}
+            onClientCreate={handleAddClient}
           />
           
           <ClientFormModal
             isOpen={isFormOpen}
             onClose={() => setIsFormOpen(false)}
+            onSubmit={handleAddClient}
           />
         </div>
       )}
