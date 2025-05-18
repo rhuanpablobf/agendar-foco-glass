@@ -96,7 +96,7 @@ export const RegisterForm = ({ onSuccess, redirectTo = '/auth/login' }: Register
         <RegisterFormFields loading={loading} />
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full bg-purple-600 hover:bg-purple-700" 
           disabled={loading}
         >
           {loading ? (
