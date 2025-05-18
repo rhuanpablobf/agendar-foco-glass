@@ -1,5 +1,5 @@
 
-export type ServiceCategory = 'hair' | 'nails' | 'skincare' | 'makeup' | 'other';
+export type ServiceCategory = 'hair' | 'nails' | 'skincare' | 'makeup' | 'other' | 'combo';
 
 export interface Service {
   id: string;

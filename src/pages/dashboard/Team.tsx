@@ -1,156 +1,194 @@
 
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfessionalList } from '@/components/team/ProfessionalList';
 import { ProfessionalForm } from '@/components/team/ProfessionalForm';
+import { WeeklySchedule } from '@/components/team/WeeklySchedule';
+import { ProfessionalServices } from '@/components/team/ProfessionalServices';
+import { CommissionConfig } from '@/components/team/CommissionConfig';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Service } from '@/types/service';
 import { toast } from 'sonner';
 
-// Mock data for professionals
-export const MOCK_PROFESSIONALS = [
+// Mock data para serviços
+const mockServices: Service[] = [
   {
     id: '1',
-    name: 'Ana Silva',
-    specialty: 'Cabeleireira',
-    photo: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
-    bio: 'Especialista em cortes femininos e coloração, com mais de 8 anos de experiência.',
-    defaultCommission: 30,
-    schedule: {
-      monday: { active: true, start: '09:00', end: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-      tuesday: { active: true, start: '09:00', end: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-      wednesday: { active: true, start: '09:00', end: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-      thursday: { active: true, start: '09:00', end: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-      friday: { active: true, start: '09:00', end: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-      saturday: { active: true, start: '09:00', end: '16:00', breakStart: '12:00', breakEnd: '13:00' },
-      sunday: { active: false, start: '09:00', end: '18:00', breakStart: '12:00', breakEnd: '13:00' }
-    },
-    services: ['1', '2', '3']
+    name: 'Corte de Cabelo Feminino',
+    description: 'Corte, lavagem e finalização',
+    duration: 60,
+    price: 80,
+    category: 'hair',
+    isActive: true,
+    isCombo: false
   },
   {
     id: '2',
-    name: 'Carlos Mendes',
-    specialty: 'Barbeiro',
-    photo: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952',
-    bio: 'Especialista em cortes masculinos, barba e tratamentos capilares para homens.',
-    defaultCommission: 25,
-    schedule: {
-      monday: { active: true, start: '10:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' },
-      tuesday: { active: true, start: '10:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' },
-      wednesday: { active: true, start: '10:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' },
-      thursday: { active: true, start: '10:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' },
-      friday: { active: true, start: '10:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' },
-      saturday: { active: true, start: '10:00', end: '17:00', breakStart: '13:00', breakEnd: '14:00' },
-      sunday: { active: false, start: '10:00', end: '19:00', breakStart: '13:00', breakEnd: '14:00' }
-    },
-    services: ['2', '4', '6']
+    name: 'Manicure',
+    description: 'Cutilagem e esmaltação',
+    duration: 45,
+    price: 35,
+    category: 'nails',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '3',
+    name: 'Pedicure',
+    description: 'Cutilagem e esmaltação',
+    duration: 60,
+    price: 45,
+    category: 'nails',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '4',
+    name: 'Escova',
+    description: 'Lavagem e escova',
+    duration: 45,
+    price: 60,
+    category: 'hair',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '6',
+    name: 'Maquiagem',
+    description: 'Maquiagem profissional',
+    duration: 60,
+    price: 120,
+    category: 'makeup',
+    isActive: true,
+    isCombo: false
   }
 ];
 
-// Mock data for services
-export const MOCK_SERVICES = [
-  { id: '1', name: 'Corte Feminino', duration: 60, price: 120, category: 'Cabelo', active: true },
-  { id: '2', name: 'Corte Masculino', duration: 30, price: 70, category: 'Cabelo', active: true },
-  { id: '3', name: 'Coloração', duration: 120, price: 200, category: 'Cabelo', active: true },
-  { id: '4', name: 'Barba', duration: 30, price: 50, category: 'Barba', active: true },
-  { id: '5', name: 'Manicure', duration: 45, price: 60, category: 'Unhas', active: true },
-  { id: '6', name: 'Pedicure', duration: 60, price: 80, category: 'Unhas', active: true },
-  { id: '7', name: 'Hidratação', duration: 45, price: 90, category: 'Tratamento', active: true },
-  { id: '8', name: 'Design de Sobrancelhas', duration: 30, price: 50, category: 'Estética', active: true },
-];
-
 const Team = () => {
-  const [professionals, setProfessionals] = useState(MOCK_PROFESSIONALS);
-  const [showForm, setShowForm] = useState(false);
-  const [currentProfessional, setCurrentProfessional] = useState(null);
-
-  const handleAddProfessional = () => {
-    setCurrentProfessional(null);
-    setShowForm(true);
-  };
-
-  const handleEditProfessional = (professional) => {
-    setCurrentProfessional(professional);
-    setShowForm(true);
-  };
-
-  const handleSaveProfessional = (professional) => {
-    if (professional.id) {
-      // Update existing professional
-      setProfessionals(prevProfessionals => 
-        prevProfessionals.map(p => p.id === professional.id ? professional : p)
-      );
-      toast.success("Profissional atualizado com sucesso!");
-    } else {
-      // Add new professional
-      const newProfessional = {
-        ...professional,
-        id: String(Date.now()), // Simple ID generation
-      };
-      setProfessionals(prevProfessionals => [...prevProfessionals, newProfessional]);
-      toast.success("Profissional adicionado com sucesso!");
+  const { subscriptionStatus } = useSubscription();
+  const isPro = subscriptionStatus?.plan === 'Profissional';
+  
+  const [selectedTab, setSelectedTab] = useState<'list' | 'create' | 'schedule' | 'services'>('list');
+  const [selectedProfessional, setSelectedProfessional] = useState<string | null>(null);
+  const [professionals, setProfessionals] = useState([
+    {
+      id: '1',
+      name: 'Ana Silva',
+      photo: 'https://i.pravatar.cc/150?img=5',
+      specialty: 'Cabeleireira',
+      bio: 'Cabeleireira profissional com mais de 5 anos de experiência',
+      services: ['1', '4'],
+      commissions: {
+        '1': 30,
+        '4': 25
+      },
+      defaultCommission: 30
+    },
+    {
+      id: '2',
+      name: 'Carlos Oliveira',
+      photo: 'https://i.pravatar.cc/150?img=12',
+      specialty: 'Barbeiro',
+      bio: 'Barbeiro especializado em cortes masculinos modernos',
+      services: [],
+      commissions: {},
+      defaultCommission: 30
     }
-    setShowForm(false);
+  ]);
+
+  const handleSelectProfessional = (id: string) => {
+    setSelectedProfessional(id);
+    setSelectedTab('schedule');
   };
 
-  const handleDeleteProfessional = (id) => {
-    setProfessionals(prevProfessionals => prevProfessionals.filter(p => p.id !== id));
-    toast.success("Profissional removido com sucesso!");
+  const handleSaveSchedule = (schedule: any) => {
+    // Aqui implementaríamos a lógica para salvar a agenda do profissional
+    console.log('Schedule saved:', schedule);
+    toast.success('Horários salvos com sucesso!');
   };
 
-  const handleCancelForm = () => {
-    setShowForm(false);
+  const handleSaveServices = (selectedServices: string[], commissions: Record<string, number>, defaultCommission: number) => {
+    if (!selectedProfessional) return;
+    
+    setProfessionals(prev => 
+      prev.map(professional => 
+        professional.id === selectedProfessional
+          ? {
+              ...professional,
+              services: selectedServices,
+              commissions,
+              defaultCommission
+            }
+          : professional
+      )
+    );
+    
+    toast.success('Serviços e comissões salvos com sucesso!');
+  };
+
+  const getCurrentProfessional = () => {
+    return professionals.find(p => p.id === selectedProfessional);
   };
 
   return (
     <MainLayout userType="company">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Equipe</h1>
-            <p className="text-muted-foreground">
-              Gerencie os profissionais da sua empresa
-            </p>
-          </div>
-
-          <div>
-            <Button onClick={handleAddProfessional}>
-              <Plus className="mr-2 h-4 w-4" /> Novo Profissional
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">Profissionais</h1>
+          <p className="text-muted-foreground">
+            Gerencie os profissionais, horários e serviços oferecidos
+          </p>
         </div>
 
-        {showForm ? (
-          <ProfessionalForm 
-            professional={currentProfessional} 
-            onSave={handleSaveProfessional} 
-            onCancel={handleCancelForm}
-            services={MOCK_SERVICES}
-          />
-        ) : (
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
-            <CardHeader>
-              <CardTitle>Profissionais</CardTitle>
-              <CardDescription>
-                Cadastre e gerencie os profissionais da sua equipe
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {professionals.length > 0 ? (
-                <ProfessionalList 
-                  professionals={professionals} 
-                  onEdit={handleEditProfessional}
-                  onDelete={handleDeleteProfessional}
+        <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as any)}>
+          <TabsList>
+            <TabsTrigger value="list">Lista</TabsTrigger>
+            <TabsTrigger value="create">Novo Profissional</TabsTrigger>
+            {selectedProfessional && (
+              <>
+                <TabsTrigger value="schedule">Horários</TabsTrigger>
+                <TabsTrigger value="services">Serviços e Comissões</TabsTrigger>
+              </>
+            )}
+          </TabsList>
+
+          <TabsContent value="list" className="space-y-6">
+            <ProfessionalList
+              professionals={professionals}
+              onSelect={handleSelectProfessional}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
+          </TabsContent>
+
+          <TabsContent value="create">
+            <ProfessionalForm />
+          </TabsContent>
+
+          {selectedProfessional && (
+            <>
+              <TabsContent value="schedule">
+                <WeeklySchedule
+                  professionalId={selectedProfessional}
+                  onSave={handleSaveSchedule}
                 />
-              ) : (
-                <p className="text-center py-10 text-muted-foreground">
-                  Nenhum profissional cadastrado. Clique em "Novo Profissional" para começar.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+              </TabsContent>
+
+              <TabsContent value="services">
+                <ProfessionalServices
+                  professionalId={selectedProfessional}
+                  services={mockServices}
+                  selectedServices={getCurrentProfessional()?.services || []}
+                  professionalCommissions={getCurrentProfessional()?.commissions}
+                  defaultCommission={getCurrentProfessional()?.defaultCommission}
+                  onSave={handleSaveServices}
+                />
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
       </div>
     </MainLayout>
   );

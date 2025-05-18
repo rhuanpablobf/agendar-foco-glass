@@ -1,342 +1,272 @@
 
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClientList } from '@/components/clients/ClientList';
 import { ClientDetails } from '@/components/clients/ClientDetails';
-import { Client, ClientFormData, ServiceHistoryItem } from '@/types/client';
-import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
+import { ClientFormModal } from '@/components/clients/ClientFormModal';
+import { Button } from '@/components/ui/button';
+import { Plus, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Client, ServiceHistoryItem } from '@/types/client';
+import { ServiceHistory } from '@/components/clients/ServiceHistory';
+import { LoyaltySystem } from '@/components/clients/LoyaltySystem';
 
-// Mock data to simulate clients
+// Mock data
 const mockClients: Client[] = [
   {
     id: '1',
-    name: 'Maria Silva',
-    email: 'maria@email.com',
+    name: 'Ana Silva',
+    email: 'ana.silva@example.com',
     phone: '(11) 98765-4321',
     createdAt: new Date('2023-01-15'),
-    notes: 'Prefere atendimento à tarde. Cliente assídua.',
+    notes: 'Preferência por produtos sem sulfato',
     preferences: {
       communicationPreference: 'whatsapp',
-      preferredProfessionals: ['Ana Costa', 'Ricardo Santos'],
-      preferredServices: ['Corte de Cabelo', 'Tintura']
+      preferredProfessionals: ['1'],
+      preferredServices: ['1', '4']
     },
     loyalty: {
-      points: 320,
-      totalSpent: 1250.50,
-      visits: 15,
-      stamps: 7,
-      lastVisit: new Date('2023-06-10')
+      points: 75,
+      totalSpent: 620,
+      visits: 8,
+      stamps: 6,
+      lastVisit: new Date('2023-05-10')
     }
   },
   {
     id: '2',
-    name: 'João Pereira',
+    name: 'Carlos Oliveira',
+    email: 'carlos.oliveira@example.com',
     phone: '(11) 91234-5678',
     createdAt: new Date('2023-02-20'),
     loyalty: {
-      points: 150,
-      totalSpent: 450.00,
-      visits: 6,
-      stamps: 3,
-      lastVisit: new Date('2023-05-22')
+      points: 30,
+      totalSpent: 250,
+      visits: 3,
+      stamps: 2,
+      lastVisit: new Date('2023-04-25')
     }
   },
   {
     id: '3',
-    name: 'Ana Carolina Santos',
-    email: 'ana@email.com',
+    name: 'Marina Santos',
+    email: 'marina.santos@example.com',
     phone: '(11) 99876-5432',
     createdAt: new Date('2023-03-05'),
-    notes: 'Alérgica a produtos com amônia.',
-    preferences: {
-      communicationPreference: 'email',
-    },
     loyalty: {
-      points: 80,
-      totalSpent: 320.00,
-      visits: 4,
-      stamps: 2,
-      lastVisit: new Date('2023-06-01')
+      points: 120,
+      totalSpent: 980,
+      visits: 12,
+      stamps: 11,
+      lastVisit: new Date('2023-05-18')
     }
-  }
+  },
 ];
 
-// Mock service history data
+// Mock service history
 const mockServiceHistory: Record<string, ServiceHistoryItem[]> = {
   '1': [
     {
-      id: 's1',
-      serviceId: 'svc1',
-      serviceName: 'Corte de Cabelo',
-      professionalId: 'p1',
-      professionalName: 'Ana Costa',
-      date: new Date('2023-06-10'),
-      price: 85.00,
+      id: '101',
+      serviceId: '1',
+      serviceName: 'Corte de Cabelo Feminino',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-05-10'),
+      price: 80,
       status: 'completed',
       rating: 5,
-      feedback: 'Excelente atendimento, amei o resultado!',
+      feedback: 'Adorei o corte, ficou exatamente como eu queria!',
       pointsEarned: 8,
       stampsEarned: 1
     },
     {
-      id: 's2',
-      serviceId: 'svc2',
-      serviceName: 'Tintura',
-      professionalId: 'p1',
-      professionalName: 'Ana Costa',
-      date: new Date('2023-05-15'),
-      price: 150.00,
+      id: '102',
+      serviceId: '4',
+      serviceName: 'Escova',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-04-20'),
+      price: 60,
       status: 'completed',
       rating: 4,
-      pointsEarned: 15,
-      stampsEarned: 1
+      pointsEarned: 6
     },
     {
-      id: 's3',
-      serviceId: 'svc3',
-      serviceName: 'Hidratação',
-      professionalId: 'p3',
-      professionalName: 'Ricardo Santos',
-      date: new Date('2023-04-20'),
-      price: 75.50,
-      status: 'cancelled',
-      pointsEarned: 0
+      id: '103',
+      serviceId: '1',
+      serviceName: 'Corte de Cabelo Feminino',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-03-15'),
+      price: 80,
+      status: 'completed',
+      pointsEarned: 8,
+      stampsEarned: 1
     }
   ],
   '2': [
     {
-      id: 's4',
-      serviceId: 'svc4',
-      serviceName: 'Barba',
-      professionalId: 'p2',
-      professionalName: 'Carlos Oliveira',
-      date: new Date('2023-05-22'),
-      price: 60.00,
+      id: '201',
+      serviceId: '6',
+      serviceName: 'Maquiagem',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-04-25'),
+      price: 120,
       status: 'completed',
       rating: 5,
-      pointsEarned: 6,
+      pointsEarned: 12,
       stampsEarned: 1
     },
     {
-      id: 's5',
-      serviceId: 'svc1',
-      serviceName: 'Corte de Cabelo',
-      professionalId: 'p2',
-      professionalName: 'Carlos Oliveira',
-      date: new Date('2023-04-10'),
-      price: 85.00,
-      status: 'completed',
-      rating: 3,
-      feedback: 'Ficou bom, mas acho que poderia ter sido melhor.',
-      pointsEarned: 8,
-      stampsEarned: 1
+      id: '202',
+      serviceId: '2',
+      serviceName: 'Manicure',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-03-30'),
+      price: 35,
+      status: 'no-show',
     }
   ],
   '3': [
     {
-      id: 's6',
-      serviceId: 'svc5',
-      serviceName: 'Manicure',
-      professionalId: 'p4',
-      professionalName: 'Mariana Costa',
-      date: new Date('2023-06-01'),
-      price: 65.00,
+      id: '301',
+      serviceId: '1',
+      serviceName: 'Corte de Cabelo Feminino',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-05-18'),
+      price: 80,
       status: 'completed',
-      rating: 4,
-      pointsEarned: 6,
+      rating: 5,
+      pointsEarned: 8,
       stampsEarned: 1
     },
     {
-      id: 's7',
-      serviceId: 'svc6',
+      id: '302',
+      serviceId: '3',
       serviceName: 'Pedicure',
-      professionalId: 'p4',
-      professionalName: 'Mariana Costa',
-      date: new Date('2023-05-01'),
-      price: 75.00,
-      status: 'no-show',
-      pointsEarned: 0
+      professionalId: '2',
+      professionalName: 'Carlos Oliveira',
+      date: new Date('2023-05-10'),
+      price: 45,
+      status: 'completed',
+      rating: 4,
+      pointsEarned: 4
+    },
+    {
+      id: '303',
+      serviceId: '2',
+      serviceName: 'Manicure',
+      professionalId: '2',
+      professionalName: 'Carlos Oliveira',
+      date: new Date('2023-05-10'),
+      price: 35,
+      status: 'completed',
+      rating: 4,
+      pointsEarned: 3
+    },
+    {
+      id: '304',
+      serviceId: '6',
+      serviceName: 'Maquiagem',
+      professionalId: '1',
+      professionalName: 'Ana Silva',
+      date: new Date('2023-04-25'),
+      price: 120,
+      status: 'cancelled',
     }
   ]
 };
 
 const Clients = () => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState(mockClients);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [serviceHistory, setServiceHistory] = useState<ServiceHistoryItem[]>([]);
-
-  // Handle client selection
-  const handleClientSelect = (client: Client) => {
+  
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.phone.includes(searchTerm)
+  );
+  
+  const handleClientClick = (client: Client) => {
     setSelectedClient(client);
-    setServiceHistory(mockServiceHistory[client.id] || []);
   };
-
-  // Handle client creation
-  const handleClientCreate = (data: ClientFormData) => {
-    const newClient: Client = {
-      id: uuidv4(),
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      notes: data.notes,
-      preferences: data.preferences,
-      createdAt: new Date(),
-      loyalty: {
-        points: 0,
-        totalSpent: 0,
-        visits: 0,
-        stamps: 0
-      }
-    };
-    
-    setClients([...clients, newClient]);
+  
+  const handleBackToList = () => {
+    setSelectedClient(null);
   };
-
-  // Handle updating client notes
-  const handleUpdateNotes = (clientId: string, notes: string) => {
-    const updatedClients = clients.map(client => 
-      client.id === clientId 
-        ? { ...client, notes } 
-        : client
-    );
-    
-    setClients(updatedClients);
-    
-    if (selectedClient && selectedClient.id === clientId) {
-      setSelectedClient({ ...selectedClient, notes });
-    }
+  
+  const handleOpenForm = () => {
+    setIsFormOpen(true);
   };
-
-  // Handle adding loyalty points
-  const handleAddLoyaltyPoints = (clientId: string, points: number) => {
-    const updatedClients = clients.map(client => {
-      if (client.id === clientId) {
-        const currentLoyalty = client.loyalty || { points: 0, totalSpent: 0, visits: 0, stamps: 0 };
-        
-        return { 
-          ...client, 
-          loyalty: {
-            ...currentLoyalty,
-            points: (currentLoyalty.points || 0) + points
-          }
-        };
-      }
-      return client;
-    });
-    
-    setClients(updatedClients);
-    
-    if (selectedClient && selectedClient.id === clientId) {
-      const currentLoyalty = selectedClient.loyalty || { points: 0, totalSpent: 0, visits: 0, stamps: 0 };
-      
-      setSelectedClient({
-        ...selectedClient,
-        loyalty: {
-          ...currentLoyalty,
-          points: (currentLoyalty.points || 0) + points
-        }
-      });
-    }
-    
-    toast.success(`${points} pontos adicionados com sucesso!`);
-  };
-
-  // Handle adding a stamp
-  const handleAddStamp = (clientId: string) => {
-    const updatedClients = clients.map(client => {
-      if (client.id === clientId) {
-        const currentLoyalty = client.loyalty || { points: 0, totalSpent: 0, visits: 0, stamps: 0 };
-        const newStamps = Math.min((currentLoyalty.stamps || 0) + 1, 10); // Max 10 stamps
-        
-        return { 
-          ...client, 
-          loyalty: {
-            ...currentLoyalty,
-            stamps: newStamps
-          }
-        };
-      }
-      return client;
-    });
-    
-    setClients(updatedClients);
-    
-    if (selectedClient && selectedClient.id === clientId) {
-      const currentLoyalty = selectedClient.loyalty || { points: 0, totalSpent: 0, visits: 0, stamps: 0 };
-      const newStamps = Math.min((currentLoyalty.stamps || 0) + 1, 10);
-      
-      setSelectedClient({
-        ...selectedClient,
-        loyalty: {
-          ...currentLoyalty,
-          stamps: newStamps
-        }
-      });
-      
-      if (newStamps === 10) {
-        toast.success("Cartão de fidelidade completo! Cliente elegível para prêmio.");
-      } else {
-        toast.success("Selo adicionado com sucesso!");
-      }
-    }
-  };
-
+  
   return (
     <MainLayout userType="company">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Clientes</h1>
-            <p className="text-muted-foreground">
-              Gerencie os clientes da sua empresa
-            </p>
+      {selectedClient ? (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <Button variant="outline" onClick={handleBackToList}>
+              Voltar para a lista
+            </Button>
+            <Button onClick={() => {}}>Editar Cliente</Button>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <ClientDetails client={selectedClient} />
+              <LoyaltySystem 
+                client={selectedClient} 
+                serviceHistory={mockServiceHistory[selectedClient.id] || []} 
+              />
+            </div>
+            
+            <div className="lg:col-span-3">
+              <ServiceHistory history={mockServiceHistory[selectedClient.id] || []} />
+            </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-1 border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
-            <CardHeader>
-              <CardTitle>Lista de Clientes</CardTitle>
-              <CardDescription>
-                Visualize e gerencie seus clientes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ClientList 
-                clients={clients}
-                onClientSelect={handleClientSelect}
-                onClientCreate={handleClientCreate}
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2 border border-white/20 bg-white/10 backdrop-blur-sm shadow-glass">
-            <CardHeader>
-              <CardTitle>Detalhes do Cliente</CardTitle>
-              <CardDescription>
-                Informações detalhadas, histórico e fidelidade
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {selectedClient ? (
-                <ClientDetails
-                  client={selectedClient}
-                  serviceHistory={serviceHistory}
-                  onUpdateNotes={handleUpdateNotes}
-                  onAddLoyaltyPoints={handleAddLoyaltyPoints}
-                  onAddStamp={handleAddStamp}
-                />
-              ) : (
-                <div className="text-center py-10 text-muted-foreground">
-                  Selecione um cliente para visualizar seus detalhes
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">Clientes</h1>
+              <p className="text-muted-foreground">
+                Gerencie os clientes do seu estabelecimento
+              </p>
+            </div>
+            <div className="w-full sm:w-auto">
+              <Button onClick={handleOpenForm} className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" /> Novo Cliente
+              </Button>
+            </div>
+          </div>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              className="pl-10"
+              placeholder="Buscar por nome, e-mail ou telefone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <ClientList 
+            clients={filteredClients} 
+            onClientClick={handleClientClick} 
+          />
+          
+          <ClientFormModal
+            isOpen={isFormOpen}
+            onClose={() => setIsFormOpen(false)}
+          />
         </div>
-      </div>
+      )}
     </MainLayout>
   );
 };

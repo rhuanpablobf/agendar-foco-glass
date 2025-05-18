@@ -1,137 +1,242 @@
 
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ServiceList } from '@/components/services/ServiceList';
 import { ServiceForm } from '@/components/services/ServiceForm';
-import { ServiceDetails } from '@/components/services/ServiceDetails';
-import { SubscriptionLimits } from '@/components/subscription/SubscriptionLimits';
-import { useSubscription } from '@/hooks/useSubscription';
-import { Service, ServiceCategory } from '@/types/service';
+import { ComboForm } from '@/components/services/ComboForm';
+import { ServiceFormData, Service } from '@/types/service';
+import { v4 as uuid } from 'uuid';
 import { toast } from 'sonner';
 
+// Mock data
+const mockServices: Service[] = [
+  {
+    id: '1',
+    name: 'Corte de Cabelo Feminino',
+    description: 'Corte, lavagem e finalização',
+    duration: 60,
+    price: 80,
+    category: 'hair',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '2',
+    name: 'Manicure',
+    description: 'Cutilagem e esmaltação',
+    duration: 45,
+    price: 35,
+    category: 'nails',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '3',
+    name: 'Pedicure',
+    description: 'Cutilagem e esmaltação',
+    duration: 60,
+    price: 45,
+    category: 'nails',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '4',
+    name: 'Escova',
+    description: 'Lavagem e escova',
+    duration: 45,
+    price: 60,
+    category: 'hair',
+    isActive: true,
+    isCombo: false
+  },
+  {
+    id: '5',
+    name: 'Dia da Noiva',
+    description: 'Pacote completo para noivas incluindo penteado, maquiagem e manicure',
+    duration: 240,
+    price: 450,
+    category: 'combo',
+    isActive: true,
+    isCombo: true,
+    comboServices: ['4', '6', '2'],
+    comboDiscount: 15
+  },
+  {
+    id: '6',
+    name: 'Maquiagem',
+    description: 'Maquiagem profissional',
+    duration: 60,
+    price: 120,
+    category: 'makeup',
+    isActive: true,
+    isCombo: false
+  }
+];
+
 const Services = () => {
-  const { subscriptionStatus } = useSubscription();
-  const showSubscriptionWarning = subscriptionStatus?.isLimitReached && subscriptionStatus?.plan === 'Gratuito';
-  
-  // State for services
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: '1',
-      name: 'Corte de Cabelo',
-      description: 'Corte tradicional masculino ou feminino',
-      duration: 30,
-      price: 50,
-      category: 'hair',
-      isActive: true,
-      isCombo: false
-    },
-    {
-      id: '2',
-      name: 'Manicure',
-      description: 'Tratamento completo para unhas',
-      duration: 45,
-      price: 35,
-      category: 'nails',
-      isActive: true,
-      isCombo: false
-    }
-  ]);
+  const [services, setServices] = useState<Service[]>(mockServices);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'service' | 'combo'>('service');
+  const [editingService, setEditingService] = useState<Service | null>(null);
 
-  // State for current service being edited or viewed
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  
-  // State for active category filter
-  const [activeFilter, setActiveFilter] = useState<ServiceCategory | 'all'>('all');
-
-  // Filter services based on active category
-  const filteredServices = activeFilter === 'all' 
-    ? services 
-    : services.filter(service => service.category === activeFilter);
-
-  // Handle editing a service
-  const handleEditService = (service: Service) => {
-    setSelectedService(service);
-    // In a real app, you might open a modal or navigate to an edit page
+  const handleOpenNewServiceDialog = () => {
+    setEditingService(null);
+    setDialogMode('service');
+    setIsDialogOpen(true);
   };
 
-  // Handle toggling service active state
-  const handleToggleActive = (id: string, isActive: boolean) => {
-    setServices(prev => 
-      prev.map(service => service.id === id ? { ...service, isActive } : service)
-    );
+  const handleOpenNewComboDialog = () => {
+    setEditingService(null);
+    setDialogMode('combo');
+    setIsDialogOpen(true);
   };
 
-  // Handle filter change
-  const handleFilterChange = (category: ServiceCategory | 'all') => {
-    setActiveFilter(category);
+  const handleOpenEditDialog = (service: Service) => {
+    setEditingService(service);
+    setDialogMode(service.isCombo ? 'combo' : 'service');
+    setIsDialogOpen(true);
   };
 
-  // Handle form submission
-  const handleSubmitService = (serviceData: any) => {
-    // In a real app, you would send this to an API
-    if (selectedService) {
-      // Update existing service
-      setServices(prev => 
-        prev.map(service => service.id === selectedService.id ? 
-          { ...service, ...serviceData } : 
-          service
+  const handleSaveService = (serviceData: ServiceFormData) => {
+    if (editingService) {
+      // Atualizando serviço existente
+      setServices(prevServices =>
+        prevServices.map(service =>
+          service.id === editingService.id
+            ? { ...service, ...serviceData }
+            : service
         )
       );
-      toast.success('Serviço atualizado com sucesso!');
+      toast.success("Serviço atualizado com sucesso!");
     } else {
-      // Create new service
-      const newService = {
-        id: Date.now().toString(), // Generate a temporary ID
+      // Criando novo serviço
+      const newService: Service = {
+        id: uuid(),
         ...serviceData,
         isActive: true
       };
-      setServices(prev => [...prev, newService as Service]);
-      toast.success('Serviço criado com sucesso!');
+      setServices(prev => [...prev, newService]);
+      toast.success("Serviço criado com sucesso!");
     }
-    setSelectedService(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleToggleServiceStatus = async (serviceId: string, isActive: boolean) => {
+    setServices(prev => 
+      prev.map(service => 
+        service.id === serviceId
+          ? { ...service, isActive }
+          : service
+      )
+    );
+  };
+
+  const handleDeleteService = (serviceId: string) => {
+    setServices(prev => prev.filter(service => service.id !== serviceId));
+    toast.success("Serviço excluído com sucesso!");
   };
 
   return (
     <MainLayout userType="company">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Serviços</h1>
-          <p className="text-muted-foreground">
-            Gerencie os serviços oferecidos pela sua empresa
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Serviços</h1>
+            <p className="text-muted-foreground">Gerencie os serviços oferecidos pelo seu estabelecimento</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleOpenNewServiceDialog} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Novo Serviço
+            </Button>
+            <Button onClick={handleOpenNewComboDialog} variant="outline" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Novo Combo
+            </Button>
+          </div>
         </div>
 
-        {showSubscriptionWarning && (
-          <div className="mb-4">
-            <SubscriptionLimits variant="compact" />
-          </div>
-        )}
+        <Tabs defaultValue="all">
+          <TabsList>
+            <TabsTrigger value="all">Todos os Serviços</TabsTrigger>
+            <TabsTrigger value="active">Ativos</TabsTrigger>
+            <TabsTrigger value="inactive">Inativos</TabsTrigger>
+            <TabsTrigger value="combos">Combos</TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="col-span-1 lg:col-span-2 space-y-6">
-            <ServiceList 
-              services={filteredServices} 
-              onEdit={handleEditService} 
-              onToggleActive={handleToggleActive}
-              onFilter={handleFilterChange}
-              activeFilter={activeFilter}
+          <TabsContent value="all">
+            <ServiceList
+              services={services}
+              onEdit={handleOpenEditDialog}
+              onDelete={handleDeleteService}
+              onToggleStatus={handleToggleServiceStatus}
             />
-          </div>
-          <div className="space-y-6">
-            <ServiceForm 
-              onSubmit={handleSubmitService} 
-              initialData={selectedService || undefined}
-              availableServices={services.filter(s => !s.isCombo)}
-              isEdit={!!selectedService}
+          </TabsContent>
+
+          <TabsContent value="active">
+            <ServiceList
+              services={services.filter(service => service.isActive)}
+              onEdit={handleOpenEditDialog}
+              onDelete={handleDeleteService}
+              onToggleStatus={handleToggleServiceStatus}
             />
-            {selectedService && (
-              <ServiceDetails 
-                service={selectedService} 
-                relatedServices={services}
+          </TabsContent>
+
+          <TabsContent value="inactive">
+            <ServiceList
+              services={services.filter(service => !service.isActive)}
+              onEdit={handleOpenEditDialog}
+              onDelete={handleDeleteService}
+              onToggleStatus={handleToggleServiceStatus}
+            />
+          </TabsContent>
+
+          <TabsContent value="combos">
+            <ServiceList
+              services={services.filter(service => service.isCombo)}
+              onEdit={handleOpenEditDialog}
+              onDelete={handleDeleteService}
+              onToggleStatus={handleToggleServiceStatus}
+            />
+          </TabsContent>
+        </Tabs>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingService 
+                  ? `Editar ${editingService.isCombo ? 'Combo' : 'Serviço'}`
+                  : dialogMode === 'combo' ? 'Novo Combo' : 'Novo Serviço'
+                }
+              </DialogTitle>
+              <DialogDescription>
+                {dialogMode === 'combo'
+                  ? 'Crie um pacote combinando diversos serviços com desconto'
+                  : 'Adicione as informações do serviço abaixo'
+                }
+              </DialogDescription>
+            </DialogHeader>
+
+            {dialogMode === 'service' ? (
+              <ServiceForm
+                onSave={handleSaveService}
+                initialData={editingService || undefined}
+              />
+            ) : (
+              <ComboForm
+                services={services.filter(s => !s.isCombo)} // Filtra para não incluir outros combos
+                onSave={handleSaveService}
+                initialData={editingService || undefined}
               />
             )}
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
