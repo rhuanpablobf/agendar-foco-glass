@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -19,9 +20,10 @@ export const LoyaltySystem: React.FC<LoyaltySystemProps> = ({ client, serviceHis
   
   const loyalty = client.loyalty || {
     points: 0,
-    totalSpent: 0,
+    total_spent: 0,
     visits: 0,
-    stamps: 0
+    stamps: 0,
+    last_visit: null
   };
   
   // Calcular pontos necessários para o próximo nível
