@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,9 +21,9 @@ import {
 interface ClientDetailsProps {
   client: Client;
   serviceHistory: ServiceHistoryItem[];
-  onUpdateNotes: (clientId: string, notes: string) => void;
-  onAddLoyaltyPoints: (clientId: string, points: number) => void;
-  onAddStamp: (clientId: string) => void;
+  onUpdateNotes: (notes: string) => void; // Modified to only accept notes
+  onAddLoyaltyPoints: (points: number) => void; // Modified to only accept points
+  onAddStamp: () => void; // Modified to accept no parameters
 }
 
 export const ClientDetails = ({ 
@@ -37,7 +36,7 @@ export const ClientDetails = ({
   const [notes, setNotes] = React.useState(client.notes || "");
 
   const handleSaveNotes = () => {
-    onUpdateNotes(client.id, notes);
+    onUpdateNotes(notes);
     toast.success("Observações salvas com sucesso");
   };
 
@@ -147,7 +146,7 @@ export const ClientDetails = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => onAddLoyaltyPoints(client.id, 10)}
+                  onClick={() => onAddLoyaltyPoints(10)}
                 >
                   Adicionar pontos (+10)
                 </Button>
@@ -186,7 +185,7 @@ export const ClientDetails = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => onAddStamp(client.id)}
+                  onClick={() => onAddStamp()}
                   disabled={(client.loyalty?.stamps || 0) >= 10}
                 >
                   Adicionar selo
