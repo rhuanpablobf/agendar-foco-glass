@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { cleanupAuthState } from '@/hooks/useAuthStatus';
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -60,23 +61,20 @@ const Register = () => {
     try {
       setLoading(true);
       
-      // Cleanup auth state to prevent issues
-      localStorage.removeItem('supabase.auth.token');
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key);
-        }
-      });
+      // Limpar estado de autenticação para evitar problemas
+      cleanupAuthState();
       
-      // Try global sign out first to ensure clean state
+      // Tentar logout global primeiro para garantir um estado limpo
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
-        // Continue even if this fails
-        console.log('Sign out before registration failed, continuing anyway');
+        // Continuar mesmo se falhar
+        console.log('Erro ao fazer logout antes do registro, continuando mesmo assim');
       }
       
-      // 1. Register the user with Supabase Auth
+      console.log('Registrando novo usuário:', data.email);
+      
+      // 1. Registrar o usuário com o Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -85,24 +83,24 @@ const Register = () => {
             first_name: data.firstName,
             last_name: data.lastName,
             phone: data.phone,
-            role: 'company_admin', // Set role for new registrations
+            role: 'company_admin', // Definir função para novos registros
           }
         }
       });
 
       if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
+        console.error('Erro de autenticação:', authError);
+        throw new Error(`Erro de autenticação: ${authError.message}`);
       }
       
       if (!authData.user) {
-        console.error('No user returned from signUp');
+        console.error('Nenhum usuário retornado do signUp');
         throw new Error('Falha ao criar usuário');
       }
 
-      console.log('User created:', authData.user.id);
+      console.log('Usuário criado com ID:', authData.user.id);
       
-      // 2. Create a company for the user
+      // 2. Criar uma empresa para o usuário
       const { data: companyData, error: companyError } = await supabase
         .from('companies')
         .insert([{ name: data.companyName }])
@@ -110,58 +108,80 @@ const Register = () => {
         .single();
 
       if (companyError) {
-        console.error('Company creation error:', companyError);
-        throw companyError;
+        console.error('Erro na criação da empresa:', companyError);
+        throw new Error(`Erro na criação da empresa: ${companyError.message}`);
       }
       
-      console.log('Company created:', companyData.id);
+      console.log('Empresa criada com ID:', companyData.id);
       
-      // 3. Update user's profile with company_id
+      // 3. Atualizar o perfil do usuário com o company_id
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ company_id: companyData.id })
         .eq('id', authData.user.id);
 
       if (profileError) {
-        console.error('Profile update error:', profileError);
-        throw profileError;
+        console.error('Erro na atualização do perfil:', profileError);
+        throw new Error(`Erro na atualização do perfil: ${profileError.message}`);
       }
       
-      // 4. Create a free subscription for the company
-      const { data: freePlan } = await supabase
+      console.log('Perfil atualizado com company_id:', companyData.id);
+      
+      // 4. Buscar o plano gratuito e criar uma assinatura
+      const { data: freePlan, error: planError } = await supabase
         .from('plans')
         .select('id')
         .eq('name', 'Gratuito')
         .single();
         
+      if (planError) {
+        console.error('Erro ao buscar plano gratuito:', planError);
+        throw new Error(`Erro ao buscar plano gratuito: ${planError.message}`);
+      }
+      
       if (freePlan) {
+        console.log('Plano gratuito encontrado com ID:', freePlan.id);
+        
         const { error: subscriptionError } = await supabase
           .from('subscriptions')
           .insert([{ 
             company_id: companyData.id,
             plan_id: freePlan.id,
-            is_active: true
+            is_active: true,
+            next_reset_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
           }]);
           
         if (subscriptionError) {
-          console.error('Subscription creation error:', subscriptionError);
-          throw subscriptionError;
+          console.error('Erro na criação da assinatura:', subscriptionError);
+          throw new Error(`Erro na criação da assinatura: ${subscriptionError.message}`);
         }
+        
+        console.log('Assinatura criada com sucesso');
       }
 
       toast.success('Conta criada com sucesso!');
       
-      // Navigate to login page to complete the sign in process
+      // Fazer logout para garantir um processo de login limpo
+      await supabase.auth.signOut();
+      
+      // Navegar para a página de login para completar o processo de login
       navigate('/auth/login');
       
     } catch (error: any) {
-      console.error('Registration error:', error);
+      console.error('Erro no registro:', error);
       
-      // Handle specific error cases
+      // Tratar casos de erro específicos
       if (error.message && error.message.includes('User already registered')) {
         toast.error('Email já registrado. Tente fazer login.');
       } else {
         toast.error(`Erro ao criar conta: ${error.message || 'Tente novamente.'}`);
+      }
+      
+      // Tentar limpar usuário parcialmente criado em caso de erro
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.error('Erro ao fazer logout após falha no registro:', e);
       }
     } finally {
       setLoading(false);

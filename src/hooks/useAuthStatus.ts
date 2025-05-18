@@ -49,10 +49,15 @@ export function useAuthStatus() {
 
     // DEPOIS verificar sessão existente
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-      setUser(user);
-      setLoading(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+        setUser(user);
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     checkAuth();
@@ -63,15 +68,21 @@ export function useAuthStatus() {
   }, [navigate]);
 
   const checkAuth = async (): Promise<boolean> => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const isAuth = !!user;
-    setIsAuthenticated(isAuth);
-    
-    if (!isAuth) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const isAuth = !!user;
+      setIsAuthenticated(isAuth);
+      
+      if (!isAuth) {
+        navigate('/auth/login');
+      }
+      
+      return isAuth;
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
       navigate('/auth/login');
+      return false;
     }
-    
-    return isAuth;
   };
 
   const logout = async () => {
