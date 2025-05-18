@@ -281,7 +281,9 @@ const Clients = () => {
                 client={selectedClient} 
                 serviceHistory={mockServiceHistory[selectedClient.id] || []}
                 onUpdateNotes={(notes) => handleUpdateNotes(selectedClient.id, notes)}
-                onAddLoyaltyPoints={(points: number) => handleAddLoyaltyPoints(selectedClient.id, points)}
+                onAddLoyaltyPoints={(points: number) => {
+                  handleAddLoyaltyPoints(selectedClient.id, points);
+                }}
                 onAddStamp={() => handleAddStamp(selectedClient.id)}
               />
               <LoyaltySystem 
